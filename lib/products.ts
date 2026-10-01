@@ -16,6 +16,9 @@ export type Product = {
   price_cents: number;
   shipping_cents: number;
   images: string[];
+  /** Tiny blurred previews keyed by photo URL, shown while the real photo loads */
+  blurs: Record<string, string>;
+  stripe_product_id: string;
   status: ProductStatus;
   visible: boolean;
   reserved_until: string | null;
@@ -31,6 +34,12 @@ export const isOnHold = (p: Product) =>
 
 export const publicStatus = (p: Product): ProductStatus =>
   p.status === "reserved" && !isOnHold(p) ? "available" : p.status;
+
+/** Listed in the last two weeks */
+export const isNew = (p: Product) => Date.now() - new Date(p.created_at).getTime() < 14 * 864e5;
+
+export const blurFor = (p: Pick<Product, "blurs">, url: string) => p.blurs?.[url];
+
 
 export type ProductFilter = { category?: string; style?: string; price?: string; limit?: number };
 

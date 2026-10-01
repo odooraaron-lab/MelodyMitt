@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-export function Gallery({ images, title }: { images: string[]; title: string }) {
+export function Gallery({ images, title, blurs = {} }: { images: string[]; title: string; blurs?: Record<string, string> }) {
   const track = useRef<HTMLDivElement>(null);
   const viewer = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -69,7 +69,10 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
                 alt={i === 0 ? title : `${title}, photo ${i + 1}`}
                 fill
                 sizes="(min-width: 900px) 55vw, 100vw"
-                priority={i === 0}
+                loading={i === 0 ? "eager" : "lazy"}
+                fetchPriority={i === 0 ? "high" : undefined}
+                placeholder={blurs[src] ? "blur" : "empty"}
+                blurDataURL={blurs[src]}
               />
               {zoom?.i === i && (
                 // Full-resolution original, fetched only once someone looks closer
@@ -92,7 +95,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
                 aria-current={i === index}
                 onClick={() => go(i)}
               >
-                <Image src={src} alt="" fill sizes="56px" />
+                <Image src={src} alt="" fill sizes="64px" />
               </button>
             ))}
           </div>
@@ -113,7 +116,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
               <div className="viewer-slide" key={src}>
                 {/* Full-resolution original, so pinch-zoom on a phone shows real detail */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={i === 0 ? title : `${title}, photo ${i + 1}`} />
+                <img src={src} alt={i === 0 ? title : `${title}, photo ${i + 1}`} loading={i === open ? "eager" : "lazy"} decoding="async" />
               </div>
             ))}
           </div>

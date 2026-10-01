@@ -1,4 +1,4 @@
-import { sql } from "./db";
+import { sql, ensureSchema } from "./db";
 
 export type Address = {
   line1?: string | null;
@@ -13,6 +13,7 @@ export type Order = {
   id: number;
   product_id: number | null;
   product_title: string;
+  product_style: string;
   stripe_session_id: string;
   customer_name: string;
   customer_email: string;
@@ -23,6 +24,8 @@ export type Order = {
   shipping_amount: number;
   status: "paid" | "shipped";
   tracking: string;
+  marketing_opt_in: boolean;
+  follow_up_sent_at: string | null;
   created_at: string;
   shipped_at: string | null;
 };
@@ -34,6 +37,7 @@ export const addressLines = (a: Address) =>
     .filter(Boolean);
 
 export async function listOrders() {
+  await ensureSchema();
   return (await sql()`SELECT * FROM orders ORDER BY created_at DESC LIMIT 200`) as Order[];
 }
 

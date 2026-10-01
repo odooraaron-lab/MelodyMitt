@@ -92,7 +92,7 @@ export function CollectionView({ title, intro, path, crumbs, products, active = 
       {products.length ? (
         <RevealGrid>
           {products.map((p, i) => (
-            <ProductCard key={p.id} product={p} priority={i < 4} />
+            <ProductCard key={p.id} product={p} eager={i < 4} lcp={i === 0} />
           ))}
         </RevealGrid>
       ) : (

@@ -17,7 +17,7 @@ export default function Policies() {
         <h1>Shipping and returns</h1>
       </header>
       <div className="prose">
-        <h2>Shipping within New Zealand</h2>
+        <h2 id="shipping">Shipping within New Zealand</h2>
         <p>
           Every piece is sent by tracked courier anywhere in New Zealand. The courier cost is shown on each piece's page
           and added at checkout.
@@ -32,7 +32,7 @@ export default function Policies() {
           way. We don't currently ship outside New Zealand.
         </p>
 
-        <h2>Returns</h2>
+        <h2 id="returns">Returns</h2>
         {days ? (
           <p>
             You can return a piece within {days} days of delivery for a full refund. Please get in touch first, then send
@@ -49,7 +49,7 @@ export default function Policies() {
           photos of the item and its packaging, and we'll put it right with a repair or a full refund.
         </p>
 
-        <h2>Payments and privacy</h2>
+        <h2 id="privacy">Payments and privacy</h2>
         <p>
           Payments are processed securely by Stripe. Card details never reach this website. Your name, email, phone and
           delivery address are used only to deliver your order and contact you about it.

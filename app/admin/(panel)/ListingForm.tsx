@@ -5,12 +5,15 @@ import { saveListing, type SaveState } from "../actions";
 import { site } from "@/site.config";
 import type { Product } from "@/lib/products";
 
-type Photo = { key: string; url?: string; preview?: string; error?: string };
+type Photo = { key: string; url?: string; preview?: string; blur?: string; error?: string };
 
 const MAX_EDGE = 2000;
 
-/** Shrinks phone photos (often 5-12 MB) to a sharp ~2000px JPEG before upload. */
-async function resize(file: File): Promise<Blob> {
+/**
+ * Shrinks phone photos (often 5-12 MB) to a sharp ~2000px JPEG before upload, and makes a
+ * tiny blurred preview (under 1 KB) that the shop shows instantly while the real photo loads.
+ */
+async function prepare(file: File): Promise<{ upload: Blob; blur?: string }> {
   try {
     const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
     const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
@@ -18,11 +21,18 @@ async function resize(file: File): Promise<Blob> {
     canvas.width = Math.round(bitmap.width * scale);
     canvas.height = Math.round(bitmap.height * scale);
     canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+    const tiny = document.createElement("canvas");
+    tiny.width = 16;
+    tiny.height = Math.max(1, Math.round((16 * bitmap.height) / bitmap.width));
+    tiny.getContext("2d")!.drawImage(bitmap, 0, 0, tiny.width, tiny.height);
+    const blur = tiny.toDataURL("image/jpeg", 0.6);
     bitmap.close();
+
     const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.86));
-    return blob ?? file;
+    return { upload: blob ?? file, blur };
   } catch {
-    return file; // unusual formats: upload as-is
+    return { upload: file }; // unusual formats: upload as-is, no preview
   }
 }
 
@@ -31,13 +41,14 @@ const cents = (c?: number) => (c === undefined ? "" : (c / 100).toFixed(c % 100 
 export function ListingForm({ product }: { product?: Product }) {
   const [state, action, saving] = useActionState<SaveState, FormData>(saveListing, { error: "" });
   const [photos, setPhotos] = useState<Photo[]>(
-    (product?.images ?? []).map((url) => ({ key: url, url }))
+    (product?.images ?? []).map((url) => ({ key: url, url, blur: product?.blurs?.[url] }))
   );
   const cameraInput = useRef<HTMLInputElement>(null);
   const libraryInput = useRef<HTMLInputElement>(null);
 
   const uploading = photos.some((p) => !p.url && !p.error);
   const urls = photos.filter((p) => p.url).map((p) => p.url!);
+  const blurs = Object.fromEntries(photos.filter((p) => p.url && p.blur).map((p) => [p.url!, p.blur!]));
 
   async function addFiles(files: FileList | null) {
     if (!files?.length) return;
@@ -53,8 +64,10 @@ export function ListingForm({ product }: { product?: Product }) {
         const update = (patch: Partial<Photo>) =>
           setPhotos((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)));
         try {
+          const { upload, blur } = await prepare(file);
+          if (blur) update({ blur });
           const body = new FormData();
-          body.append("file", await resize(file), "photo.jpg");
+          body.append("file", upload, "photo.jpg");
           const res = await fetch("/api/admin/upload", { method: "POST", body });
           const data = await res.json().catch(() => ({}));
           if (!res.ok || !data.url) throw new Error(data.error || "Upload failed. Check your connection and try again.");
@@ -101,6 +114,7 @@ export function ListingForm({ product }: { product?: Product }) {
     <form action={action} className="form">
       {product && <input type="hidden" name="id" value={product.id} />}
       <input type="hidden" name="images" value={JSON.stringify(urls)} />
+      <input type="hidden" name="blurs" value={JSON.stringify(blurs)} />
       {photoInputs}
 
       <section className="step">

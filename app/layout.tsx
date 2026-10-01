@@ -34,7 +34,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-NZ" data-theme={site.theme}>
-      <body>{children}</body>
+      <body id="top">{children}</body>
     </html>
   );
 }

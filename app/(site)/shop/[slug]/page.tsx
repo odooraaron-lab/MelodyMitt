@@ -119,7 +119,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       </nav>
 
       <article className="product">
-        <Gallery images={p.images} title={[p.title, p.medium].filter(Boolean).join(", ")} />
+        <Gallery images={p.images} blurs={p.blurs} title={[p.title, p.medium].filter(Boolean).join(", ")} />
 
         <div className="product-info">
           {unavailable && (

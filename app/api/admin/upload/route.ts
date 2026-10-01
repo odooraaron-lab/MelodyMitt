@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     access: "public",
     addRandomSuffix: true,
     contentType: file.type,
+    cacheControlMaxAge: 60 * 60 * 24 * 365, // names are unique, so the file never changes
   });
 
   return NextResponse.json({ url: blob.url });

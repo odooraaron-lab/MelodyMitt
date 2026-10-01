@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { del } from "@vercel/blob";
 import { sql } from "@/lib/db";
 import { requireAdmin, checkCredentials, startSession, endSession } from "@/lib/auth";
-import { getProductById } from "@/lib/products";
+import { getProductById, listAllProducts } from "@/lib/products";
+import { trySyncToStripe, archiveInStripe } from "@/lib/stripe-sync";
 import { ensureSchema } from "@/lib/db";
 import { getOrder } from "@/lib/orders";
 import { sendShippedEmail } from "@/lib/email";
@@ -64,6 +65,18 @@ export async function saveListing(_prev: SaveState, formData: FormData): Promise
     /* handled below */
   }
 
+  let blurs: Record<string, string> = {};
+  try {
+    const raw = JSON.parse(String(formData.get("blurs") ?? "{}")) as Record<string, unknown>;
+    // Keep only previews for photos still on the listing, and only small data URLs.
+    for (const url of images) {
+      const b = raw[url];
+      if (typeof b === "string" && b.startsWith("data:image/") && b.length < 3000) blurs[url] = b;
+    }
+  } catch {
+    blurs = {};
+  }
+
   if (!title) return { error: "Add a title." };
   if (!images.length) return { error: "Add at least one photo." };
   if (!Number.isFinite(price) || price < 50) return { error: "Enter a price of at least $0.50." };
@@ -71,27 +84,32 @@ export async function saveListing(_prev: SaveState, formData: FormData): Promise
   if (!site.categories.some((c) => c.id === category)) return { error: "Choose a category." };
 
   const imagesJson = JSON.stringify(images);
+  const blursJson = JSON.stringify(blurs);
   await ensureSchema();
 
+  let savedId = id;
   if (id) {
     const existing = await getProductById(id);
     if (!existing) return { error: "This listing no longer exists." };
     await sql()`UPDATE products SET
         title = ${title}, description = ${description}, category = ${category}, style = ${style}, medium = ${medium},
         dimensions = ${dimensions}, year = ${year}, price_cents = ${price}, shipping_cents = ${shipping},
-        images = ${imagesJson}::jsonb, updated_at = now()
+        images = ${imagesJson}::jsonb, blurs = ${blursJson}::jsonb, updated_at = now()
       WHERE id = ${id}`;
     await deleteBlobs(existing.images.filter((u) => !images.includes(u)));
   } else {
     const slug = `${slugify(title)}-${Math.random().toString(36).slice(2, 6)}`;
-    await sql()`INSERT INTO products
-        (slug, title, description, category, style, medium, dimensions, year, price_cents, shipping_cents, images, visible)
+    const rows = (await sql()`INSERT INTO products
+        (slug, title, description, category, style, medium, dimensions, year, price_cents, shipping_cents, images, blurs, visible)
       VALUES (${slug}, ${title}, ${description}, ${category}, ${style}, ${medium}, ${dimensions}, ${year},
-              ${price}, ${shipping}, ${imagesJson}::jsonb, ${intent !== "hide"})`;
+              ${price}, ${shipping}, ${imagesJson}::jsonb, ${blursJson}::jsonb, ${intent !== "hide"})
+      RETURNING id`) as { id: number }[];
+    savedId = rows[0].id;
   }
 
+  const synced = await trySyncToStripe(await getProductById(savedId));
   refresh();
-  redirect(`/admin?saved=${encodeURIComponent(title)}`);
+  redirect(`/admin?saved=${encodeURIComponent(title)}${synced || !process.env.STRIPE_SECRET_KEY ? "" : "&stripe=failed"}`);
 }
 
 export async function setSold(formData: FormData) {
@@ -105,6 +123,7 @@ export async function setSold(formData: FormData) {
     await sql()`UPDATE products SET status = 'available', sold_at = NULL, reserved_until = NULL,
                 reserved_session_id = NULL, updated_at = now() WHERE id = ${id}`;
   }
+  await trySyncToStripe(await getProductById(id));
   refresh();
   redirect(`/admin/listings/${id}`);
 }
@@ -114,6 +133,7 @@ export async function setVisible(formData: FormData) {
   const id = Number(formData.get("id"));
   const visible = formData.get("visible") === "1";
   await sql()`UPDATE products SET visible = ${visible}, updated_at = now() WHERE id = ${id}`;
+  await trySyncToStripe(await getProductById(id));
   refresh();
   redirect(`/admin/listings/${id}`);
 }
@@ -123,11 +143,57 @@ export async function deleteListing(formData: FormData) {
   const id = Number(formData.get("id"));
   const product = await getProductById(id);
   if (product) {
+    await archiveInStripe(product.stripe_product_id);
     await sql()`DELETE FROM products WHERE id = ${id}`;
     await deleteBlobs(product.images);
   }
   refresh();
   redirect("/admin?deleted=1");
+}
+
+export type WebhookState = { error?: string; secret?: string; done?: string };
+
+/** Creates the Stripe webhook for this site and shows its signing secret once, to paste into Vercel. */
+export async function createWebhook(_prev: WebhookState): Promise<WebhookState> {
+  await requireAdmin();
+  const { stripe } = await import("@/lib/stripe");
+  const { webhookUrl, WEBHOOK_EVENTS } = await import("@/lib/checks");
+  const url = webhookUrl();
+  if (!url.startsWith("https://")) return { error: "Set NEXT_PUBLIC_SITE_URL to the live https address first." };
+  try {
+    const existing = (await stripe().webhookEndpoints.list({ limit: 100 })).data.find((e) => e.url === url);
+    if (existing) {
+      await stripe().webhookEndpoints.update(existing.id, {
+        enabled_events: WEBHOOK_EVENTS as never,
+        disabled: false,
+      });
+      return { done: "The webhook already existed, so its events were updated. Its signing secret is unchanged." };
+    }
+    const ep = await stripe().webhookEndpoints.create({
+      url,
+      enabled_events: WEBHOOK_EVENTS as never,
+      description: `${site.name} shop`,
+    });
+    return { secret: ep.secret ?? "" };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Stripe didn't accept the request." };
+  }
+}
+
+export async function syncAllToStripe() {
+  await requireAdmin();
+  const all = await listAllProducts();
+  let ok = 0;
+  for (const p of all) if (await trySyncToStripe(p)) ok++;
+  redirect(`/admin/setup?synced=${ok}&of=${all.length}`);
+}
+
+/** Sends Melody a sample order confirmation (with real suggestions) so she can see what buyers get. */
+export async function sendTestEmail() {
+  await requireAdmin();
+  const { sendSampleEmail } = await import("@/lib/email");
+  const ok = await sendSampleEmail(process.env.OWNER_EMAIL ?? "");
+  redirect(`/admin/setup?test=${ok ? "sent" : "failed"}`);
 }
 
 // ---------- Orders ----------

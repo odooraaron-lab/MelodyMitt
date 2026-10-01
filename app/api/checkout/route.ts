@@ -33,24 +33,28 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const session = await stripe().checkout.sessions.create({
-      mode: "payment",
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: site.currency,
-            unit_amount: product.price_cents,
-            product_data: {
-              name: product.title,
-              images: product.images.slice(0, 1),
-              ...(product.medium || product.dimensions
-                ? { description: [product.medium, product.dimensions].filter(Boolean).join(", ") }
-                : {}),
-            },
-          },
-        },
-      ],
+    // The price always comes from the listing. When the piece has a product in the Stripe catalogue,
+    // the sale is recorded against it; otherwise (or if that product was removed in Stripe) the
+    // details are sent inline, so checkout never fails because of the catalogue.
+    const inline = {
+      name: product.title,
+      images: product.images.slice(0, 1),
+      ...(product.medium || product.dimensions
+        ? { description: [product.medium, product.dimensions].filter(Boolean).join(", ") }
+        : {}),
+    };
+    const lineItem = (useCatalogue: boolean) => ({
+      quantity: 1,
+      price_data: {
+        currency: site.currency,
+        unit_amount: product.price_cents,
+        ...(useCatalogue ? { product: product.stripe_product_id } : { product_data: inline }),
+      },
+    });
+    const createSession = (useCatalogue: boolean) =>
+      stripe().checkout.sessions.create({
+        mode: "payment",
+        line_items: [lineItem(useCatalogue)],
       shipping_address_collection: { allowed_countries: ["NZ"] },
       shipping_options: [
         {
@@ -72,12 +76,36 @@ export async function POST(req: NextRequest) {
         },
       ],
       phone_number_collection: { enabled: true },
+      // Optional opt-in for "new pieces" emails (NZ law needs consent for marketing emails).
+      custom_fields: [
+        {
+          key: "updates",
+          label: { type: "custom", custom: "Email me when new pieces are listed?" },
+          type: "dropdown",
+          optional: true,
+          dropdown: {
+            options: [
+              { label: "Yes please", value: "yes" },
+              { label: "No thanks", value: "no" },
+            ],
+          },
+        },
+      ],
       metadata: { site: SITE_TAG, product_id: String(product.id) },
       payment_intent_data: { metadata: { site: SITE_TAG, product_id: String(product.id) } },
       expires_at: Math.floor(Date.now() / 1000) + HOLD_MINUTES * 60,
       success_url: `${site.url}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${site.url}/shop/${product.slug}`,
-    });
+      });
+
+    let session;
+    try {
+      session = await createSession(!!product.stripe_product_id);
+    } catch (err) {
+      if (!product.stripe_product_id) throw err;
+      console.warn("Checkout with catalogue product failed, retrying inline", err);
+      session = await createSession(false);
+    }
 
     await sql()`UPDATE products SET reserved_session_id = ${session.id} WHERE id = ${product.id}`;
 

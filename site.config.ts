@@ -48,6 +48,8 @@ export const site = {
   defaultShippingNzd: 25,
   shipping,
   returns,
+  // Days after shipping that buyers get a "how does it look?" email with new pieces (needs CRON_SECRET).
+  followUpDays: 14,
   dispatchNote: `Dispatched by tracked courier within ${shipping.handlingDays.max} working days, anywhere in New Zealand.`,
 
   // What kind of thing a piece is. Each gets its own page at /shop/category/<id>.

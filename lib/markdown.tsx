@@ -24,13 +24,31 @@ function inline(text: string, key: string): ReactNode[] {
   return out;
 }
 
+const headingId = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+/** The "## " headings of a post, for its contents list. */
+export const headings = (source: string) =>
+  source
+    .split("\n")
+    .filter((l) => l.startsWith("## "))
+    .map((l) => ({ text: l.slice(3).trim(), id: headingId(l.slice(3).trim()) }));
+
 export function Markdown({ source }: { source: string }) {
   const blocks = source.trim().split(/\n\s*\n/);
   return (
     <>
       {blocks.map((block, b) => {
         const lines = block.trim().split("\n");
-        if (lines[0].startsWith("## ")) return <h2 key={b}>{inline(lines[0].slice(3), `h${b}`)}</h2>;
+        if (lines[0].startsWith("## "))
+          return (
+            <h2 key={b} id={headingId(lines[0].slice(3).trim())}>
+              {inline(lines[0].slice(3), `h${b}`)}
+            </h2>
+          );
         if (lines.every((l) => l.startsWith("- ")))
           return (
             <ul key={b}>

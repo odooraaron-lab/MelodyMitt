@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { listAllProducts, publicStatus, type Product } from "@/lib/products";
 import { formatNzd } from "@/lib/format";
 
-type Props = { searchParams: Promise<{ f?: string; saved?: string; deleted?: string }> };
+type Props = { searchParams: Promise<{ f?: string; saved?: string; deleted?: string; stripe?: string }> };
 
 const filters = [
   { id: "all", label: "All" },
@@ -35,7 +35,7 @@ function State({ p }: { p: Product }) {
 
 export default async function Listings({ searchParams }: Props) {
   await requireAdmin();
-  const { f = "all", saved, deleted } = await searchParams;
+  const { f = "all", saved, deleted, stripe } = await searchParams;
   const all = await listAllProducts();
   const shown = all.filter((p) => matches(p, f));
 
@@ -44,6 +44,11 @@ export default async function Listings({ searchParams }: Props) {
       {saved && (
         <p className="notice" role="status">
           Saved “{saved}”.
+        </p>
+      )}
+      {stripe === "failed" && (
+        <p className="notice" role="alert">
+          Saved, but Stripe couldn't be updated just now. The piece can still be bought. Open Setup to sync it.
         </p>
       )}
       {deleted && (

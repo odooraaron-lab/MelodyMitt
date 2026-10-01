@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS products (
   price_cents         INTEGER NOT NULL CHECK (price_cents >= 50),
   shipping_cents      INTEGER NOT NULL DEFAULT 0 CHECK (shipping_cents >= 0),
   images              JSONB NOT NULL DEFAULT '[]'::jsonb,
+  blurs               JSONB NOT NULL DEFAULT '{}'::jsonb,
+  stripe_product_id   TEXT NOT NULL DEFAULT '',
   status              TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'reserved', 'sold')),
   visible             BOOLEAN NOT NULL DEFAULT TRUE,
   reserved_until      TIMESTAMPTZ,
@@ -28,6 +30,7 @@ CREATE TABLE IF NOT EXISTS orders (
   id                SERIAL PRIMARY KEY,
   product_id        INTEGER REFERENCES products(id) ON DELETE SET NULL,
   product_title     TEXT NOT NULL,
+  product_style     TEXT NOT NULL DEFAULT '',
   stripe_session_id TEXT UNIQUE NOT NULL,
   customer_name     TEXT NOT NULL DEFAULT '',
   customer_email    TEXT NOT NULL DEFAULT '',
@@ -38,11 +41,25 @@ CREATE TABLE IF NOT EXISTS orders (
   shipping_amount   INTEGER NOT NULL DEFAULT 0,
   status            TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('paid', 'shipped')),
   tracking          TEXT NOT NULL DEFAULT '',
+  marketing_opt_in  BOOLEAN NOT NULL DEFAULT FALSE,
+  follow_up_sent_at TIMESTAMPTZ,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   shipped_at        TIMESTAMPTZ
 );
 
 CREATE INDEX IF NOT EXISTS orders_created_idx ON orders (created_at DESC);
 
--- Added October 2026: art style per piece (abstract, landscape...). Safe to run more than once.
+-- People who unsubscribed from follow-up emails
+CREATE TABLE IF NOT EXISTS email_optouts (
+  email      TEXT PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Columns added after launch. The site adds these itself on first run (lib/db.ts);
+-- they're here so an older database can also be upgraded by hand. Safe to run more than once.
 ALTER TABLE products ADD COLUMN IF NOT EXISTS style TEXT NOT NULL DEFAULT '';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS blurs JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS stripe_product_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS product_style TEXT NOT NULL DEFAULT '';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS marketing_opt_in BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS follow_up_sent_at TIMESTAMPTZ;
