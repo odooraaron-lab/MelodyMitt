@@ -7,6 +7,7 @@ import { StatusPrice, productMeta } from "@/components/ProductCard";
 import { getPublicProduct, listPublicProducts, publicStatus } from "@/lib/products";
 import { ProductCard } from "@/components/ProductCard";
 import { formatNzd } from "@/lib/format";
+import { offerShipping, returnPolicy } from "@/lib/schema";
 import { site, categoryLabel } from "@/site.config";
 
 export const dynamic = "force-dynamic";
@@ -84,14 +85,12 @@ export default async function ProductPage({ params, searchParams }: Props) {
             price: (p.price_cents / 100).toFixed(2),
             priceCurrency: "NZD",
             availability: status === "sold" ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
-            itemCondition: "https://schema.org/NewCondition",
+            // Original artworks are new; collected objects may be pre-owned, so no condition is claimed for them.
+            ...(p.category === "art" ? { itemCondition: "https://schema.org/NewCondition" } : {}),
             url: `${site.url}/shop/${p.slug}`,
-            seller: { "@type": "Person", name: site.name },
-            shippingDetails: {
-              "@type": "OfferShippingDetails",
-              shippingRate: { "@type": "MonetaryAmount", value: (p.shipping_cents / 100).toFixed(2), currency: "NZD" },
-              shippingDestination: { "@type": "DefinedRegion", addressCountry: "NZ" },
-            },
+            seller: { "@type": "Organization", "@id": `${site.url}/#store`, name: site.name },
+            shippingDetails: offerShipping(p.shipping_cents),
+            hasMerchantReturnPolicy: returnPolicy(),
           },
         }}
       />

@@ -59,8 +59,14 @@ export async function POST(req: NextRequest) {
             display_name: "Tracked courier, NZ-wide",
             fixed_amount: { amount: product.shipping_cents, currency: site.currency },
             delivery_estimate: {
-              minimum: { unit: "business_day", value: 2 },
-              maximum: { unit: "business_day", value: 6 },
+              minimum: {
+                unit: "business_day",
+                value: site.shipping.handlingDays.min + site.shipping.transitDays.min,
+              },
+              maximum: {
+                unit: "business_day",
+                value: site.shipping.handlingDays.max + site.shipping.transitDays.max,
+              },
             },
           },
         },

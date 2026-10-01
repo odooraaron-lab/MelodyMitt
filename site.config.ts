@@ -2,6 +2,18 @@
 
 export type Theme = "plaster" | "stone" | "sage";
 
+// Shipping and returns. These feed the Shipping and returns page, the checkout delivery
+// estimate and the Google structured data, so the three always agree.
+const shipping = {
+  handlingDays: { min: 1, max: 3 }, // working days to pack and hand to the courier
+  transitDays: { min: 1, max: 3 }, // working days the courier takes within NZ
+};
+const returns = {
+  // 0 = no change-of-mind returns (faulty or damaged items are still put right).
+  // Set to e.g. 14 to accept returns within 14 days of delivery; the page and Google data update to match.
+  days: 0,
+};
+
 export const site = {
   name: "Melody Mitt",
   tagline: "Original art and collected pieces",
@@ -34,7 +46,9 @@ export const site = {
 
   // Default courier price for new listings (NZD). Melody can change it per listing.
   defaultShippingNzd: 25,
-  dispatchNote: "Dispatched by tracked courier within 3 working days, anywhere in New Zealand.",
+  shipping,
+  returns,
+  dispatchNote: `Dispatched by tracked courier within ${shipping.handlingDays.max} working days, anywhere in New Zealand.`,
 
   categories: [
     { id: "art", label: "Art" },
