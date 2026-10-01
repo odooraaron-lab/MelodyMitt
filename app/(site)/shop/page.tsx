@@ -25,14 +25,15 @@ export default async function Shop({ searchParams }: Props) {
   const { c } = await searchParams;
   const category = site.categories.some((x) => x.id === c) ? c : undefined;
   const products = await listPublicProducts({ category });
-  const available = products.filter((p) => p.status !== "sold").length;
+  const sold = products.filter((p) => p.status === "sold").length;
+  const available = products.length - sold;
 
   return (
     <div className="wrap">
       <header className="page-head">
         <h1>{category ? categoryLabel(category) : "Shop"}</h1>
         <p>
-          {available} {available === 1 ? "piece" : "pieces"} available. Sold works keep their red dot.
+          {available} available{sold ? `, ${sold} sold` : ""}
         </p>
       </header>
 

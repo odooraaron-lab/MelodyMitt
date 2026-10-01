@@ -15,6 +15,24 @@ const filters = [
 const matches = (p: Product, f: string) =>
   f === "hidden" ? !p.visible : f === "sold" ? p.status === "sold" : f === "available" ? p.status !== "sold" && p.visible : true;
 
+function State({ p }: { p: Product }) {
+  if (!p.visible) return <span className="state state-hidden">Hidden</span>;
+  const status = publicStatus(p);
+  if (status === "sold")
+    return (
+      <span className="state">
+        <span className="red-dot" aria-hidden /> Sold
+      </span>
+    );
+  if (status === "reserved")
+    return (
+      <span className="state">
+        <span className="hold-dot" aria-hidden /> In checkout
+      </span>
+    );
+  return <span className="state">For sale</span>;
+}
+
 export default async function Listings({ searchParams }: Props) {
   await requireAdmin();
   const { f = "all", saved, deleted } = await searchParams;
@@ -23,13 +41,6 @@ export default async function Listings({ searchParams }: Props) {
 
   return (
     <>
-      <div className="admin-title">
-        <h1>Listings</h1>
-        <Link href="/admin/listings/new" className="btn btn-small">
-          New listing
-        </Link>
-      </div>
-
       {saved && (
         <p className="notice" role="status">
           Saved “{saved}”.
@@ -41,6 +52,10 @@ export default async function Listings({ searchParams }: Props) {
         </p>
       )}
 
+      <Link href="/admin/listings/new" className="btn btn-block">
+        Add a new piece
+      </Link>
+
       <nav className="tabs" aria-label="Filter listings">
         {filters.map((x) => (
           <Link
@@ -49,50 +64,47 @@ export default async function Listings({ searchParams }: Props) {
             className="chip"
             aria-current={f === x.id ? "page" : undefined}
           >
-            {x.label} ({all.filter((p) => matches(p, x.id)).length})
+            {x.label} {all.filter((p) => matches(p, x.id)).length}
           </Link>
         ))}
       </nav>
 
       {shown.length ? (
         <ul className="row-list">
-          {shown.map((p) => {
-            const status = publicStatus(p);
-            return (
-              <li key={p.id}>
-                <Link href={`/admin/listings/${p.id}`} className="row">
-                  {p.images[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img className="row-thumb" src={p.images[0]} alt="" />
-                  ) : (
-                    <span className="row-thumb" />
-                  )}
-                  <span>
-                    <span className="title">{p.title}</span>
-                    <span className="sub">
-                      {formatNzd(p.price_cents)}
-                      {status === "sold" && (
-                        <>
-                          <span className="red-dot" aria-hidden /> Sold
-                        </>
-                      )}
-                      {status === "reserved" && <span className="badge">In checkout</span>}
-                      {!p.visible && <span className="badge">Hidden</span>}
-                    </span>
+          {shown.map((p) => (
+            <li key={p.id}>
+              <Link href={`/admin/listings/${p.id}`} className="row" aria-label={`Edit ${p.title}`}>
+                {p.images[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img className="row-thumb" src={p.images[0]} alt="" />
+                ) : (
+                  <span className="row-thumb" />
+                )}
+                <span className="row-text">
+                  <span className="title">{p.title}</span>
+                  <span className="sub">
+                    {formatNzd(p.price_cents)}
+                    <State p={p} />
                   </span>
-                  <span className="muted" aria-hidden>
-                    Edit
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
+                </span>
+                <span className="chev" aria-hidden>
+                  ›
+                </span>
+              </Link>
+            </li>
+          ))}
         </ul>
       ) : (
         <p className="empty">
-          {all.length ? "Nothing in this view." : "No listings yet. Tap New listing to photograph your first piece."}
+          {all.length ? "Nothing in this view." : "No pieces yet. Tap Add a new piece to photograph your first one."}
         </p>
       )}
+
+      <p style={{ marginTop: 24 }}>
+        <Link href="/" target="_blank" className="muted">
+          Open the shop in a new tab
+        </Link>
+      </p>
     </>
   );
 }

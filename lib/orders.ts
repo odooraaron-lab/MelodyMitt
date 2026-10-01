@@ -27,8 +27,9 @@ export type Order = {
   shipped_at: string | null;
 };
 
+// NZ style: street, suburb, "City 1234". Country is omitted since every order ships within NZ.
 export const addressLines = (a: Address) =>
-  [a.line1, a.line2, a.city, [a.state, a.postal_code].filter(Boolean).join(" "), a.country]
+  [a.line1, a.line2, a.state, [a.city, a.postal_code].filter(Boolean).join(" ")]
     .map((s) => (s ?? "").trim())
     .filter(Boolean);
 

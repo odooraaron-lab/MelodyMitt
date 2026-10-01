@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { Gallery } from "./Gallery";
 import { JsonLd } from "@/components/JsonLd";
 import { StatusPrice, productMeta } from "@/components/ProductCard";
-import { getPublicProduct, publicStatus } from "@/lib/products";
+import { getPublicProduct, listPublicProducts, publicStatus } from "@/lib/products";
+import { ProductCard } from "@/components/ProductCard";
 import { formatNzd } from "@/lib/format";
 import { site, categoryLabel } from "@/site.config";
 
@@ -46,6 +47,9 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
   const status = publicStatus(p);
   const meta = productMeta(p);
+  const related = (await listPublicProducts({ limit: 12 }))
+    .filter((x) => x.id !== p.id && x.status !== "sold")
+    .slice(0, 4);
 
   const buyForm = (
     <form action="/api/checkout" method="post">
@@ -92,14 +96,20 @@ export default async function ProductPage({ params, searchParams }: Props) {
         }}
       />
 
+      <nav className="crumbs" aria-label="Breadcrumb">
+        <Link href="/shop">Shop</Link>
+        <span aria-hidden>/</span>
+        <Link href={`/shop?c=${p.category}`}>{categoryLabel(p.category)}</Link>
+      </nav>
+
       <article className="product">
         <Gallery images={p.images} title={p.title} />
 
         <div className="product-info">
           {unavailable && (
             <p className="notice" role="status">
-              Someone else is checking out this piece right now. If they don't complete it, it will be available again
-              within about 30 minutes.
+              Someone else is checking out this piece. If they don't finish, it will be available again within 30
+              minutes.
             </p>
           )}
           {error && (
@@ -109,32 +119,35 @@ export default async function ProductPage({ params, searchParams }: Props) {
           )}
 
           <h1>{p.title}</h1>
-          <p className="artist-line">{site.name}</p>
           {meta && <p className="product-meta">{meta}</p>}
 
           <p className="product-price">
             <StatusPrice product={p} />
           </p>
-          {status === "sold" && <p className="status-note">This piece has found its home.</p>}
-          {status === "reserved" && (
-            <p className="status-note">Someone is checking out. If they don't finish, it becomes available again.</p>
-          )}
+          <p className="status-note">
+            {status === "sold"
+              ? "This piece has found its home."
+              : status === "reserved"
+                ? "Someone is checking out. If they don't finish, it becomes available again."
+                : `Plus ${formatNzd(p.shipping_cents)} tracked courier, NZ-wide.`}
+          </p>
 
           <div className="buy-inline">{buyForm}</div>
 
           {p.description && <div className="product-desc">{p.description}</div>}
 
+          <h2 className="details-head">Details</h2>
           <dl className="details">
-            {p.medium && (
-              <div>
-                <dt>Medium</dt>
-                <dd>{p.medium}</dd>
-              </div>
-            )}
             {p.dimensions && (
               <div>
                 <dt>Size</dt>
                 <dd>{p.dimensions}</dd>
+              </div>
+            )}
+            {p.medium && (
+              <div>
+                <dt>Medium</dt>
+                <dd>{p.medium}</dd>
               </div>
             )}
             {p.year && (
@@ -144,24 +157,28 @@ export default async function ProductPage({ params, searchParams }: Props) {
               </div>
             )}
             <div>
-              <dt>Category</dt>
-              <dd>
-                <Link href={`/shop?c=${p.category}`}>{categoryLabel(p.category)}</Link>
-              </dd>
-            </div>
-            <div>
-              <dt>Courier</dt>
+              <dt>Delivery</dt>
               <dd>
                 {formatNzd(p.shipping_cents)}. {site.dispatchNote}
               </dd>
             </div>
           </dl>
-
-          <Link href="/shop" className="back-link">
-            Back to all pieces
-          </Link>
         </div>
       </article>
+
+      {related.length > 0 && (
+        <section className="related" aria-labelledby="related">
+          <div className="section-head">
+            <h2 id="related">More pieces</h2>
+            <Link href="/shop">See everything</Link>
+          </div>
+          <div className="grid">
+            {related.map((r) => (
+              <ProductCard key={r.id} product={r} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {status !== "sold" && (
         <>

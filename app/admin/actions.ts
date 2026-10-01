@@ -51,7 +51,7 @@ export async function saveListing(_prev: SaveState, formData: FormData): Promise
   const year = String(formData.get("year") ?? "").trim();
   const price = toCents(formData.get("price"));
   const shipping = toCents(formData.get("shipping"));
-  const visible = formData.get("visible") === "on";
+  const intent = String(formData.get("intent") ?? "");
   let images: string[] = [];
   try {
     images = (JSON.parse(String(formData.get("images") ?? "[]")) as unknown[]).filter(
@@ -75,7 +75,7 @@ export async function saveListing(_prev: SaveState, formData: FormData): Promise
     await sql()`UPDATE products SET
         title = ${title}, description = ${description}, category = ${category}, medium = ${medium},
         dimensions = ${dimensions}, year = ${year}, price_cents = ${price}, shipping_cents = ${shipping},
-        images = ${imagesJson}::jsonb, visible = ${visible}, updated_at = now()
+        images = ${imagesJson}::jsonb, updated_at = now()
       WHERE id = ${id}`;
     await deleteBlobs(existing.images.filter((u) => !images.includes(u)));
   } else {
@@ -83,7 +83,7 @@ export async function saveListing(_prev: SaveState, formData: FormData): Promise
     await sql()`INSERT INTO products
         (slug, title, description, category, medium, dimensions, year, price_cents, shipping_cents, images, visible)
       VALUES (${slug}, ${title}, ${description}, ${category}, ${medium}, ${dimensions}, ${year},
-              ${price}, ${shipping}, ${imagesJson}::jsonb, ${visible})`;
+              ${price}, ${shipping}, ${imagesJson}::jsonb, ${intent !== "hide"})`;
   }
 
   refresh();

@@ -33,7 +33,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
             <div className="wall">
               <Image
                 src={src}
-                alt={i === 0 ? title : `${title}, view ${i + 1}`}
+                alt={i === 0 ? title : `${title}, photo ${i + 1}`}
                 fill
                 sizes="(min-width: 900px) 55vw, 100vw"
                 priority={i === 0}
@@ -43,7 +43,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
         ))}
       </div>
       {images.length > 1 && (
-        <div className="gallery-dots">
+        <div className="thumbs">
           {images.map((src, i) => (
             <button
               key={src}
@@ -51,7 +51,9 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
               aria-label={`Show photo ${i + 1} of ${images.length}`}
               aria-current={i === index}
               onClick={() => go(i)}
-            />
+            >
+              <Image src={src} alt="" fill sizes="56px" />
+            </button>
           ))}
         </div>
       )}

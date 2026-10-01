@@ -70,44 +70,44 @@ export function ListingForm({ product }: { product?: Product }) {
   const makeCover = (key: string) =>
     setPhotos((prev) => [...prev.filter((p) => p.key === key), ...prev.filter((p) => p.key !== key)]);
 
+  const photoInputs = (
+    <>
+      <input
+        ref={cameraInput}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        hidden
+        onChange={(e) => {
+          addFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={libraryInput}
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        onChange={(e) => {
+          addFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+    </>
+  );
+
   return (
     <form action={action} className="form">
       {product && <input type="hidden" name="id" value={product.id} />}
       <input type="hidden" name="images" value={JSON.stringify(urls)} />
+      {photoInputs}
 
-      <div className="field">
-        <span className="field-label">Photos</span>
-        <span className="hint">The first photo is the cover. Shoot against a plain wall in daylight for the best result.</span>
-        <div className="photo-actions">
-          <button type="button" className="btn btn-quiet" onClick={() => cameraInput.current?.click()}>
-            Take photo
-          </button>
-          <button type="button" className="btn btn-quiet" onClick={() => libraryInput.current?.click()}>
-            Upload photos
-          </button>
+      <section className="step">
+        <div className="step-head">
+          <span className="num">1</span>
+          <h2>Photos</h2>
         </div>
-        <input
-          ref={cameraInput}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          hidden
-          onChange={(e) => {
-            addFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
-        <input
-          ref={libraryInput}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={(e) => {
-            addFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
         {photos.length > 0 && (
           <div className="photos">
             {photos.map((p, i) => (
@@ -116,20 +116,16 @@ export function ListingForm({ product }: { product?: Product }) {
                 <img src={p.preview ?? p.url} alt={`Photo ${i + 1}`} />
                 {i === 0 && p.url && <span className="cover-tag">Cover</span>}
                 {!p.url && !p.error && <span className="progress">Uploading</span>}
-                {p.error && (
-                  <span className="progress form-error" style={{ padding: 8, textAlign: "center" }}>
-                    {p.error}
-                  </span>
-                )}
+                {p.error && <span className="progress form-error">{p.error}</span>}
                 <div className="photo-tools">
                   {i > 0 && p.url ? (
-                    <button type="button" aria-label="Make cover photo" title="Make cover" onClick={() => makeCover(p.key)}>
-                      ★
+                    <button type="button" onClick={() => makeCover(p.key)}>
+                      Cover
                     </button>
                   ) : (
                     <span />
                   )}
-                  <button type="button" aria-label="Remove photo" title="Remove" onClick={() => remove(p.key)}>
+                  <button type="button" aria-label={`Remove photo ${i + 1}`} onClick={() => remove(p.key)}>
                     ✕
                   </button>
                 </div>
@@ -137,82 +133,104 @@ export function ListingForm({ product }: { product?: Product }) {
             ))}
           </div>
         )}
-      </div>
+        <div className="photo-drop">
+          <div className="field-row">
+            <button type="button" className="btn" onClick={() => cameraInput.current?.click()}>
+              Take photo
+            </button>
+            <button type="button" className="btn btn-quiet" onClick={() => libraryInput.current?.click()}>
+              Choose photos
+            </button>
+          </div>
+          <p className="hint">
+            {photos.length ? "The first photo is the cover. Tap Cover on another to swap." : "Daylight against a plain wall works best."}
+          </p>
+        </div>
+      </section>
 
-      <div className="field">
-        <label htmlFor="title">Title</label>
-        <input className="input" id="title" name="title" defaultValue={product?.title} required />
-      </div>
-
-      <div className="field-row">
+      <section className="step">
+        <div className="step-head">
+          <span className="num">2</span>
+          <h2>About the piece</h2>
+        </div>
         <div className="field">
-          <label htmlFor="price">Price (NZD)</label>
-          <input
-            className="input"
-            id="price"
-            name="price"
-            inputMode="decimal"
-            placeholder="450"
-            defaultValue={cents(product?.price_cents)}
-            required
+          <label htmlFor="title">Title</label>
+          <input className="input" id="title" name="title" defaultValue={product?.title} required />
+        </div>
+        <div className="field">
+          <label htmlFor="description">
+            Description <span className="optional">(recommended)</span>
+          </label>
+          <textarea
+            className="textarea"
+            id="description"
+            name="description"
+            placeholder="What it is, the story behind it, its condition."
+            defaultValue={product?.description}
           />
         </div>
         <div className="field">
-          <label htmlFor="shipping">Courier (NZD)</label>
-          <input
-            className="input"
-            id="shipping"
-            name="shipping"
-            inputMode="decimal"
-            defaultValue={product ? cents(product.shipping_cents) : String(site.defaultShippingNzd)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="field">
-        <label htmlFor="category">Category</label>
-        <select className="select" id="category" name="category" defaultValue={product?.category ?? "art"}>
-          {site.categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="field">
-        <label htmlFor="description">Description</label>
-        <span className="hint">What it is, the story behind it, condition. A few sentences helps buyers and Google.</span>
-        <textarea className="textarea" id="description" name="description" defaultValue={product?.description} />
-      </div>
-
-      <div className="field">
-        <label htmlFor="medium">Medium or material</label>
-        <input className="input" id="medium" name="medium" placeholder="Oil on canvas" defaultValue={product?.medium} />
-      </div>
-
-      <div className="field-row">
-        <div className="field">
-          <label htmlFor="dimensions">Size</label>
-          <input
-            className="input"
-            id="dimensions"
-            name="dimensions"
-            placeholder="60 × 80 cm"
-            defaultValue={product?.dimensions}
-          />
+          <label htmlFor="category">Category</label>
+          <select className="select" id="category" name="category" defaultValue={product?.category ?? "art"}>
+            {site.categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="field">
-          <label htmlFor="year">Year</label>
-          <input className="input" id="year" name="year" inputMode="numeric" placeholder="2026" defaultValue={product?.year} />
+          <label htmlFor="medium">
+            Medium or material <span className="optional">(optional)</span>
+          </label>
+          <input className="input" id="medium" name="medium" placeholder="Oil on canvas" defaultValue={product?.medium} />
         </div>
-      </div>
+        <div className="field-row">
+          <div className="field">
+            <label htmlFor="dimensions">
+              Size <span className="optional">(optional)</span>
+            </label>
+            <input className="input" id="dimensions" name="dimensions" placeholder="60 × 80 cm" defaultValue={product?.dimensions} />
+          </div>
+          <div className="field">
+            <label htmlFor="year">
+              Year <span className="optional">(optional)</span>
+            </label>
+            <input className="input" id="year" name="year" inputMode="numeric" placeholder="2026" defaultValue={product?.year} />
+          </div>
+        </div>
+      </section>
 
-      <label className="check">
-        <input type="checkbox" name="visible" defaultChecked={product?.visible ?? true} />
-        Show in shop
-      </label>
+      <section className="step">
+        <div className="step-head">
+          <span className="num">3</span>
+          <h2>Price</h2>
+        </div>
+        <div className="field-row">
+          <div className="field">
+            <label htmlFor="price">Price</label>
+            <div className="money">
+              <span aria-hidden>$</span>
+              <input className="input" id="price" name="price" inputMode="decimal" placeholder="450" defaultValue={cents(product?.price_cents)} required />
+            </div>
+          </div>
+          <div className="field">
+            <label htmlFor="shipping">Courier</label>
+            <div className="money">
+              <span aria-hidden>$</span>
+              <input
+                className="input"
+                id="shipping"
+                name="shipping"
+                inputMode="decimal"
+                defaultValue={product ? cents(product.shipping_cents) : String(site.defaultShippingNzd)}
+                required
+              />
+            </div>
+          </div>
+        </div>
+        <p className="hint">NZ dollars. The buyer pays the courier cost on top of the price.</p>
+      </section>
 
       {state.error && (
         <p className="form-error" role="alert">
@@ -221,12 +239,25 @@ export function ListingForm({ product }: { product?: Product }) {
       )}
 
       <div className="form-actions">
-        <button className="btn" type="submit" disabled={saving || uploading}>
-          {uploading ? "Waiting for photos" : saving ? "Saving" : product ? "Save changes" : "Publish listing"}
-        </button>
-        <a className="btn btn-quiet" href="/admin">
-          Cancel
-        </a>
+        {product ? (
+          <>
+            <button className="btn" type="submit" disabled={saving || uploading}>
+              {uploading ? "Waiting for photos" : saving ? "Saving" : "Save changes"}
+            </button>
+            <a className="btn btn-quiet" href="/admin">
+              Cancel
+            </a>
+          </>
+        ) : (
+          <>
+            <button className="btn" type="submit" name="intent" value="publish" disabled={saving || uploading}>
+              {uploading ? "Waiting for photos" : saving ? "Saving" : "Put in shop"}
+            </button>
+            <button className="btn btn-quiet" type="submit" name="intent" value="hide" disabled={saving || uploading}>
+              Save hidden
+            </button>
+          </>
+        )}
       </div>
     </form>
   );
