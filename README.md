@@ -45,9 +45,16 @@ Redeploy after adding variables. See `.env.example` for the full list.
 ## Testing a purchase
 With Stripe test keys, list a piece in `/admin`, then buy it with card `4242 4242 4242 4242`, any future expiry and any CVC. It should turn Sold with a red dot and appear in `/admin/orders`.
 
+## Browsing by style
+Each piece can be given an art style in admin (Abstract, Landscape, Coastal, Botanical, Figurative, Still life). Every style and category has its own page that Google can index, for example `/shop/style/abstract` and `/shop/category/objects`, and they're linked from the Shop menu, the home page and the footer. Edit the list, and each style's Google title and intro, in `site.config.ts`.
+
+Upgrading an existing database: the site adds the new `style` column by itself the first time it runs. To do it by hand instead, run the last line of `db/schema.sql` in the Neon SQL editor.
+
 ## Editing content
 - Site name, Google titles, keywords, categories, default courier price, colour theme, About text: `site.config.ts`
 - Colour theme: set `theme` to `"plaster"`, `"stone"` or `"sage"` in `site.config.ts`
+- Art styles, categories and price filters: `site.config.ts`
+- Share image used when pages are posted to social media or shown by Google: `public/opengraph-image.png`
 - Journal posts: `content/posts.ts` (copy an entry, change slug, date and text)
 - Shipping and returns wording: `app/(site)/shipping-and-returns/page.tsx`
 

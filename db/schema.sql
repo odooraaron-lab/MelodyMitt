@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS products (
   title               TEXT NOT NULL,
   description         TEXT NOT NULL DEFAULT '',
   category            TEXT NOT NULL DEFAULT 'art',
+  style               TEXT NOT NULL DEFAULT '',
   medium              TEXT NOT NULL DEFAULT '',
   dimensions          TEXT NOT NULL DEFAULT '',
   year                TEXT NOT NULL DEFAULT '',
@@ -42,3 +43,6 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 CREATE INDEX IF NOT EXISTS orders_created_idx ON orders (created_at DESC);
+
+-- Added October 2026: art style per piece (abstract, landscape...). Safe to run more than once.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS style TEXT NOT NULL DEFAULT '';

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { site } from "@/site.config";
+import { shareImage } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,8 +19,9 @@ export const metadata: Metadata = {
     title: site.homeTitle,
     description: site.description,
     url: "/",
+    images: [shareImage],
   },
-  twitter: { card: "summary_large_image", title: site.homeTitle, description: site.description },
+  twitter: { card: "summary_large_image", title: site.homeTitle, description: site.description, images: [shareImage.url] },
   robots: { index: true, follow: true },
 };
 

@@ -180,6 +180,19 @@ export function ListingForm({ product }: { product?: Product }) {
           </select>
         </div>
         <div className="field">
+          <label htmlFor="style">
+            Style <span className="optional">(helps buyers browse)</span>
+          </label>
+          <select className="select" id="style" name="style" defaultValue={product?.style ?? ""}>
+            <option value="">No particular style</option>
+            {site.styles.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
           <label htmlFor="medium">
             Medium or material <span className="optional">(optional)</span>
           </label>

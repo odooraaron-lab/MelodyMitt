@@ -31,7 +31,7 @@ export function ProductCard({ product, priority }: { product: Product; priority?
         {product.images[0] ? (
           <Image
             src={product.images[0]}
-            alt={product.title}
+            alt={[product.title, product.medium].filter(Boolean).join(", ")}
             fill
             sizes="(min-width: 1100px) 300px, (min-width: 720px) 33vw, 50vw"
             priority={priority}

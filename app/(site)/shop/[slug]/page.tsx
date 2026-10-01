@@ -8,7 +8,8 @@ import { getPublicProduct, listPublicProducts, publicStatus } from "@/lib/produc
 import { ProductCard } from "@/components/ProductCard";
 import { formatNzd } from "@/lib/format";
 import { offerShipping, returnPolicy } from "@/lib/schema";
-import { site, categoryLabel } from "@/site.config";
+import { site, categoryLabel, styleLabel } from "@/site.config";
+import { breadcrumbs } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await getPublicProduct(slug);
   if (!p) return { title: "Piece not found" };
   const meta = productMeta(p);
-  const description =
-    (p.description || `${p.title}${meta ? `, ${meta}` : ""}. An original piece by ${site.name}.`)
-      .replace(/\s+/g, " ")
-      .slice(0, 155);
+  // Lead with the piece, finish with what makes someone click: original, NZ, price.
+  const clip = (t: string, n: number) => (t.length <= n ? t : `${t.slice(0, t.lastIndexOf(" ", n))}…`);
+  const tail = `Original by NZ artist ${site.name}${p.status === "sold" ? "" : `, ${formatNzd(p.price_cents)}`}.`;
+  const lead = (p.description || `${p.title}${meta ? `, ${meta}` : ""}.`).replace(/\s+/g, " ").trim();
+  const description = `${clip(lead, 150 - tail.length)} ${tail}`;
   return {
     title: `${p.title}${p.medium ? `, ${p.medium}` : ""}`,
     description,
@@ -37,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `/shop/${p.slug}`,
       images: p.images.slice(0, 1).map((url) => ({ url, alt: p.title })),
     },
+    twitter: { card: "summary_large_image", title: `${p.title} by ${site.name}`, description, images: p.images.slice(0, 1) },
   };
 }
 
@@ -48,9 +51,17 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
   const status = publicStatus(p);
   const meta = productMeta(p);
-  const related = (await listPublicProducts({ limit: 12 }))
-    .filter((x) => x.id !== p.id && x.status !== "sold")
-    .slice(0, 4);
+  // Same style first, then anything else available.
+  const others = (await listPublicProducts()).filter((x) => x.id !== p.id && x.status !== "sold");
+  const related = [...others.filter((x) => p.style && x.style === p.style), ...others.filter((x) => !p.style || x.style !== p.style)].slice(0, 4);
+
+  const crumbs: [string, string][] = [
+    ["Home", "/"],
+    ["Shop", "/shop"],
+    [categoryLabel(p.category), `/shop/category/${p.category}`],
+    ...(p.style ? ([[styleLabel(p.style), `/shop/style/${p.style}`]] as [string, string][]) : []),
+    [p.title, `/shop/${p.slug}`],
+  ];
 
   const buyForm = (
     <form action="/api/checkout" method="post">
@@ -77,7 +88,9 @@ export default async function ProductPage({ params, searchParams }: Props) {
           description: p.description || meta,
           image: p.images,
           url: `${site.url}/shop/${p.slug}`,
-          category: categoryLabel(p.category),
+          category: [categoryLabel(p.category), styleLabel(p.style)].filter(Boolean).join(" > "),
+          sku: `MM-${p.id}`,
+          productID: `MM-${p.id}`,
           brand: { "@type": "Brand", name: site.name },
           ...(p.medium ? { material: p.medium } : {}),
           offers: {
@@ -95,14 +108,18 @@ export default async function ProductPage({ params, searchParams }: Props) {
         }}
       />
 
+      <JsonLd data={breadcrumbs(crumbs)} />
       <nav className="crumbs" aria-label="Breadcrumb">
-        <Link href="/shop">Shop</Link>
-        <span aria-hidden>/</span>
-        <Link href={`/shop?c=${p.category}`}>{categoryLabel(p.category)}</Link>
+        {crumbs.slice(1, -1).map(([name, href], i) => (
+          <span key={href}>
+            {i > 0 && <span aria-hidden>/ </span>}
+            <Link href={href}>{name}</Link>{" "}
+          </span>
+        ))}
       </nav>
 
       <article className="product">
-        <Gallery images={p.images} title={p.title} />
+        <Gallery images={p.images} title={[p.title, p.medium].filter(Boolean).join(", ")} />
 
         <div className="product-info">
           {unavailable && (
@@ -149,6 +166,14 @@ export default async function ProductPage({ params, searchParams }: Props) {
                 <dd>{p.medium}</dd>
               </div>
             )}
+            {p.style && (
+              <div>
+                <dt>Style</dt>
+                <dd>
+                  <Link href={`/shop/style/${p.style}`}>{styleLabel(p.style)}</Link>
+                </dd>
+              </div>
+            )}
             {p.year && (
               <div>
                 <dt>Year</dt>
@@ -168,7 +193,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       {related.length > 0 && (
         <section className="related" aria-labelledby="related">
           <div className="section-head">
-            <h2 id="related">More pieces</h2>
+            <h2 id="related">{p.style && related[0]?.style === p.style ? `More ${styleLabel(p.style).toLowerCase()} pieces` : "More pieces"}</h2>
             <Link href="/shop">See everything</Link>
           </div>
           <div className="grid">

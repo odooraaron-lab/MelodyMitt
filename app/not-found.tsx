@@ -2,14 +2,17 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="login">
-      <div style={{ textAlign: "center", display: "grid", gap: 14 }}>
-        <h1 style={{ fontSize: 32 }}>This page has moved on</h1>
-        <p className="muted">The piece may have been taken down, or the link is mistyped.</p>
-        <p>
-          <Link href="/shop">Browse the shop</Link>
-        </p>
+    <main className="studio">
+      <div className="wall-label" style={{ maxWidth: 380 }}>
+        <div className="label-head">
+          <p className="label-artist">Melody Mitt</p>
+          <p className="label-title">This page has moved on</p>
+          <p className="label-medium">The piece may have sold and been taken down, or the link is mistyped.</p>
+        </div>
+        <Link href="/shop" className="btn">
+          Browse the shop
+        </Link>
       </div>
-    </div>
+    </main>
   );
 }

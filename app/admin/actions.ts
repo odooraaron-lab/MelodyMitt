@@ -6,6 +6,7 @@ import { del } from "@vercel/blob";
 import { sql } from "@/lib/db";
 import { requireAdmin, checkCredentials, startSession, endSession } from "@/lib/auth";
 import { getProductById } from "@/lib/products";
+import { ensureSchema } from "@/lib/db";
 import { getOrder } from "@/lib/orders";
 import { sendShippedEmail } from "@/lib/email";
 import { slugify, toCents } from "@/lib/format";
@@ -46,6 +47,8 @@ export async function saveListing(_prev: SaveState, formData: FormData): Promise
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const category = String(formData.get("category") ?? "art");
+  const styleInput = String(formData.get("style") ?? "");
+  const style = site.styles.some((x) => x.id === styleInput) ? styleInput : "";
   const medium = String(formData.get("medium") ?? "").trim();
   const dimensions = String(formData.get("dimensions") ?? "").trim();
   const year = String(formData.get("year") ?? "").trim();
@@ -68,12 +71,13 @@ export async function saveListing(_prev: SaveState, formData: FormData): Promise
   if (!site.categories.some((c) => c.id === category)) return { error: "Choose a category." };
 
   const imagesJson = JSON.stringify(images);
+  await ensureSchema();
 
   if (id) {
     const existing = await getProductById(id);
     if (!existing) return { error: "This listing no longer exists." };
     await sql()`UPDATE products SET
-        title = ${title}, description = ${description}, category = ${category}, medium = ${medium},
+        title = ${title}, description = ${description}, category = ${category}, style = ${style}, medium = ${medium},
         dimensions = ${dimensions}, year = ${year}, price_cents = ${price}, shipping_cents = ${shipping},
         images = ${imagesJson}::jsonb, updated_at = now()
       WHERE id = ${id}`;
@@ -81,8 +85,8 @@ export async function saveListing(_prev: SaveState, formData: FormData): Promise
   } else {
     const slug = `${slugify(title)}-${Math.random().toString(36).slice(2, 6)}`;
     await sql()`INSERT INTO products
-        (slug, title, description, category, medium, dimensions, year, price_cents, shipping_cents, images, visible)
-      VALUES (${slug}, ${title}, ${description}, ${category}, ${medium}, ${dimensions}, ${year},
+        (slug, title, description, category, style, medium, dimensions, year, price_cents, shipping_cents, images, visible)
+      VALUES (${slug}, ${title}, ${description}, ${category}, ${style}, ${medium}, ${dimensions}, ${year},
               ${price}, ${shipping}, ${imagesJson}::jsonb, ${intent !== "hide"})`;
   }
 

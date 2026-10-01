@@ -6,6 +6,7 @@ import { Markdown } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { formatDate } from "@/lib/format";
 import { site } from "@/site.config";
+import { breadcrumbs, shareImage } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `/journal/${post.slug}`,
       publishedTime: post.date,
       authors: [site.name],
+      images: [shareImage],
     },
   };
 }
@@ -47,9 +49,17 @@ export default async function PostPage({ params }: Props) {
           dateModified: post.date,
           keywords: post.keywords.join(", "),
           mainEntityOfPage: `${site.url}/journal/${post.slug}`,
+          image: `${site.url}/opengraph-image.png`,
           author: { "@type": "Person", name: site.name, url: `${site.url}/about` },
           publisher: { "@type": "Person", name: site.name },
         }}
+      />
+      <JsonLd
+        data={breadcrumbs([
+          ["Home", "/"],
+          ["Journal", "/journal"],
+          [post.title, `/journal/${post.slug}`],
+        ])}
       />
       <article>
         <header className="article-head">
