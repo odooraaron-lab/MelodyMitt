@@ -7,33 +7,49 @@
    dot: the gallery red dot that marks a sold work. */
 :root,
 [data-theme="plaster"] {
-  --paper: #f8f5f0;
-  --wall: #e9e2d6;
-  --wall-deep: #ddd3c4;
+  --paper: #f4efe7;
+  --wall: #e5dbcc;
+  --wall-deep: #d8ccb9;
+  --tint: #ebe2d3;
   --ink: #2b2724;
-  --muted: #776d63;
-  --line: #ddd5c9;
+  --muted: #6f655b;
+  --line: #d9cfbf;
   --dot: #b3261e;
   --hold: #a7741c;
   --shadow: 43 39 36;
+  /* Contrast colours, taken from the studio artwork: deep ink blue, ochre */
+  --deep: #1f2b35;
+  --deep-2: #2e3b4e;
+  --on-deep: #f3ede3;
+  --on-deep-muted: #b7b0a5;
+  --accent: #c8913c;
+  --action: #24323f;
 }
 [data-theme="stone"] {
-  --paper: #f7f7f5;
-  --wall: #e6e5e1;
-  --wall-deep: #d8d7d2;
+  --paper: #f3f3f0;
+  --wall: #e1e0db;
+  --wall-deep: #d3d2cc;
+  --tint: #e8e7e2;
   --ink: #24262a;
-  --muted: #6c7077;
-  --line: #d9d9d4;
+  --muted: #666a71;
+  --line: #d5d5cf;
   --shadow: 36 38 42;
+  --deep: #22262c;
+  --deep-2: #343a43;
+  --action: #22262c;
 }
 [data-theme="sage"] {
-  --paper: #f5f6f1;
-  --wall: #e1e5da;
-  --wall-deep: #d2d8c9;
+  --paper: #f2f3ec;
+  --wall: #dde2d4;
+  --wall-deep: #cfd6c3;
+  --tint: #e4e8dc;
   --ink: #262a24;
-  --muted: #697064;
-  --line: #d3d8cb;
+  --muted: #636a5e;
+  --line: #cfd5c5;
   --shadow: 38 42 36;
+  --deep: #212a22;
+  --deep-2: #39463a;
+  --action: #2c382d;
 }
 
 :root {
@@ -1950,12 +1966,12 @@ html.menu-open {
 
 /* Frosted menu and buy bar */
 .menu-panel {
-  background: rgb(248 245 240 / 0.86);
+  background: rgb(244 239 231 / 0.86);
   -webkit-backdrop-filter: blur(22px) saturate(1.2);
   backdrop-filter: blur(22px) saturate(1.2);
 }
 .buy-bar {
-  background: rgb(248 245 240 / 0.86);
+  background: rgb(244 239 231 / 0.86);
   -webkit-backdrop-filter: blur(22px) saturate(1.2);
   backdrop-filter: blur(22px) saturate(1.2);
 }
@@ -2195,4 +2211,163 @@ html.menu-open {
   padding: 10px;
   background: #fff;
   font-size: 13px;
+}
+
+
+/* ---------- Contrast: colour bands, stronger actions ---------- */
+.band {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.band-deep {
+  background: var(--deep);
+  color: var(--on-deep);
+}
+.band-tint {
+  background: var(--tint);
+  margin-top: clamp(56px, 10vw, 96px);
+  padding: clamp(40px, 8vw, 72px) 0;
+}
+.band-tint .post-list,
+.band-tint .post-list li {
+  border-color: rgb(var(--shadow) / 0.14);
+}
+.section-tight {
+  margin-top: clamp(36px, 7vw, 64px);
+}
+
+.btn {
+  background: var(--action);
+  border-color: var(--action);
+}
+
+/* Home intro on the deep band */
+.intro-band .intro {
+  padding: clamp(48px, 12vw, 120px) var(--gutter) clamp(48px, 10vw, 104px);
+}
+.intro-band .intro p {
+  color: var(--on-deep-muted);
+}
+.intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+.btn-light {
+  background: var(--on-deep);
+  color: var(--deep);
+  border-color: var(--on-deep);
+}
+.btn-ghost-light {
+  background: transparent;
+  color: var(--on-deep);
+  border-color: rgb(243 237 227 / 0.35);
+}
+.btn-ghost-light:hover {
+  border-color: var(--on-deep);
+  opacity: 1;
+}
+.glow-dark span:nth-child(1) {
+  background: var(--accent);
+  opacity: 0.32;
+  left: auto;
+  right: -140px;
+  top: -120px;
+}
+.glow-dark span:nth-child(2) {
+  background: #6e7046;
+  opacity: 0.3;
+  right: auto;
+  left: -160px;
+  top: 55%;
+}
+.glow-dark span:nth-child(3) {
+  background: #c4877a;
+  opacity: 0.18;
+}
+
+/* Buttons and prices carry more weight */
+.btn-quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: rgb(var(--shadow) / 0.35);
+}
+.btn-quiet:hover {
+  border-color: var(--ink);
+  opacity: 1;
+}
+.btn-danger {
+  background: transparent;
+  color: var(--dot);
+  border-color: var(--dot);
+}
+.btn-buy {
+  background: var(--action);
+  color: var(--on-deep, #fff);
+  border-color: var(--action);
+}
+.btn-buy:hover,
+.btn-buy:focus-visible {
+  background: var(--deep);
+  border-color: var(--deep);
+  color: var(--on-deep, #fff);
+}
+.label .price,
+.product-price {
+  font-weight: 600;
+}
+.label .price .was {
+  font-weight: 400;
+}
+.chip[aria-current="page"] {
+  background: var(--action);
+  border-color: var(--action);
+}
+.new-tag {
+  background: var(--accent);
+  color: #1f1a14;
+  font-weight: 600;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.section-head a,
+.text-link {
+  text-decoration-color: var(--accent) !important;
+  text-decoration-thickness: 2px !important;
+}
+
+/* Deep footer */
+.site-footer {
+  background: var(--deep);
+  color: var(--on-deep-muted);
+  border-top: 0;
+}
+.site-footer .footer-name,
+.site-footer .footer-col h2,
+.site-footer .footer-promises strong,
+.site-footer a:hover,
+.site-footer .text-link {
+  color: var(--on-deep);
+}
+.site-footer .glass {
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.14);
+  box-shadow: none;
+}
+.site-footer .footer-promises li + li,
+.site-footer .footer-bottom {
+  border-color: rgb(255 255 255 / 0.12);
+}
+.site-footer .glow span:nth-child(1) {
+  background: var(--accent);
+  opacity: 0.28;
+}
+.site-footer .glow span:nth-child(2) {
+  opacity: 0.32;
+}
+.site-footer .glow span:nth-child(3) {
+  background: #c4877a;
+  opacity: 0.16;
 }

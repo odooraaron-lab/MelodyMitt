@@ -24,16 +24,32 @@ export default async function Home() {
   });
 
   return (
-    <div className="wrap">
-      <section className="intro">
-        <h1>Original art and collected pieces, each one of one.</h1>
-        <p>
-          New work and found objects from {site.name}, photographed and listed from the studio. Couriered anywhere in
-          New Zealand.
-        </p>
+    <>
+      {/* Deep ink band: strong contrast straight away */}
+      <section className="band band-deep intro-band">
+        <div className="glow glow-dark" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className="wrap intro">
+          <h1>Original art and collected pieces, each one of one.</h1>
+          <p>
+            New work and found objects from {site.name}, photographed and listed from the studio. Couriered anywhere in
+            New Zealand.
+          </p>
+          <div className="intro-actions">
+            <Link href="/shop" className="btn btn-light">
+              Shop all pieces
+            </Link>
+            <Link href="/about#how-it-works" className="btn btn-ghost-light">
+              How buying works
+            </Link>
+          </div>
+        </div>
       </section>
 
-      <section aria-labelledby="new-in">
+      <section className="wrap section-tight" aria-labelledby="new-in">
         <div className="section-head">
           <h2 id="new-in">Latest pieces</h2>
           <Link href="/shop">See everything</Link>
@@ -49,9 +65,60 @@ export default async function Home() {
         )}
       </section>
 
-      <section className="section" aria-labelledby="styles">
+      <div className="wrap">
+        <section className="section feature-glass home-about" aria-labelledby="about-title">
+          <div className="feature-art" aria-hidden>
+            {aboutCover ? (
+              <Image src={aboutCover} alt="" fill sizes="100vw" />
+            ) : (
+              <div className="glow glow-static">
+                <span />
+                <span />
+                <span />
+              </div>
+            )}
+          </div>
+          <div className="glass feature-card">
+            <h2 id="about-title">About the studio</h2>
+            <p>{site.about.short}</p>
+            <div className="feature-links">
+              <Link href="/about" className="btn">
+                About Melody
+              </Link>
+              <Link href="/about#how-it-works" className="text-link">
+                How buying works
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Tinted band so the journal reads as its own space */}
+      <section className="band band-tint" aria-labelledby="journal">
+        <div className="wrap">
+          <div className="section-head">
+            <h2 id="journal">From the journal</h2>
+            <Link href="/journal">All guides</Link>
+          </div>
+          <ul className="post-list">
+            {posts.map((post) => (
+              <li key={post.slug}>
+                <Link href={`/journal/${post.slug}`}>
+                  <h3>{post.title}</h3>
+                  <p>{post.description}</p>
+                  <time dateTime={post.date}>{formatDate(post.date)}</time>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Kept low on the page until there are more pieces in each style */}
+      <section className="wrap section" aria-labelledby="styles">
         <div className="section-head">
           <h2 id="styles">Browse by style</h2>
+          <Link href="/shop">Shop all</Link>
         </div>
         <RevealGrid className="style-tiles">
           {styleTiles.map((s) => (
@@ -69,50 +136,6 @@ export default async function Home() {
           ))}
         </RevealGrid>
       </section>
-
-      <section className="section feature-glass home-about" aria-labelledby="about-title">
-        <div className="feature-art" aria-hidden>
-          {aboutCover ? (
-            <Image src={aboutCover} alt="" fill sizes="100vw" />
-          ) : (
-            <div className="glow glow-static">
-              <span />
-              <span />
-              <span />
-            </div>
-          )}
-        </div>
-        <div className="glass feature-card">
-          <h2 id="about-title">About the studio</h2>
-          <p>{site.about.short}</p>
-          <div className="feature-links">
-            <Link href="/about" className="btn">
-              About Melody
-            </Link>
-            <Link href="/about#how-it-works" className="text-link">
-              How buying works
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="section" aria-labelledby="journal">
-        <div className="section-head">
-          <h2 id="journal">From the journal</h2>
-          <Link href="/journal">All posts</Link>
-        </div>
-        <ul className="post-list">
-          {posts.map((post) => (
-            <li key={post.slug}>
-              <Link href={`/journal/${post.slug}`}>
-                <h3>{post.title}</h3>
-                <p>{post.description}</p>
-                <time dateTime={post.date}>{formatDate(post.date)}</time>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </div>
+    </>
   );
 }
