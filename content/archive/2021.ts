@@ -238,7 +238,7 @@ Visiting? Our [New Plymouth art guide](/journal/new-plymouth-art-govett-brewster
     seoTitle: "Beaux-Arts Style at Home: Symmetry and Art",
     description:
       "Use the principles of the Beaux-Arts tradition at home: classical proportion, symmetry and focal points, and how to pair them with modern original art.",
-    date: "2021-11-01",
+    date: "2021-10-29",
     category: "art-history",
     keywords: ["Beaux-Arts style", "Beaux-Arts interior design", "classical proportion decorating", "symmetrical wall art", "traditional interior with modern art", "Beaux-Arts architecture"],
     shop: { label: "Shop still life art", href: "/shop/style/still-life", style: "still-life" },

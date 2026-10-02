@@ -497,3 +497,35 @@ export function relatedPosts(post: Post, n = 3) {
     .slice(0, n)
     .map((x) => x.p);
 }
+
+// Words that tie a post to an art style, beyond the style link in its call to action.
+const styleTerms: Record<string, string[]> = {
+  abstract: ["abstract", "street art", "kinetic", "movement"],
+  landscape: ["landscape", "high country", "mountain", "river"],
+  coastal: ["coastal", "seascape", "beach", "surf", "salt air"],
+  botanical: ["botanical", "garden", "flowers", "leaf"],
+  figurative: ["figurative", "life drawing", "portrait", "archival", "figure drawing"],
+  "still-life": ["still life", "arranged objects", "mantel", "sideboard", "villa"],
+};
+
+/** The posts most closely tied to an art style: its own call-to-action posts first, then topic matches. */
+export function postsForStyle(styleId: string, n = 6) {
+  const terms = styleTerms[styleId] ?? [styleId.replace("-", " ")];
+  return sortedPosts()
+    .map((p) => {
+      const head = `${p.title} ${p.description} ${p.keywords.join(" ")}`.toLowerCase();
+      const body = p.body.toLowerCase();
+      let score = p.shop?.style === styleId ? 20 : 0;
+      if (p.body.includes(`/shop/style/${styleId}`)) score += 8;
+      for (const t of terms) {
+        const word = new RegExp(`\\b${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}s?\\b`, "g"); // whole words (plural allowed), so "villa" skips "village"
+        if (word.test(head)) score += 4;
+        score += Math.min(4, (body.match(word) ?? []).length);
+      }
+      return { p, score };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || b.p.date.localeCompare(a.p.date))
+    .slice(0, n)
+    .map((x) => x.p);
+}

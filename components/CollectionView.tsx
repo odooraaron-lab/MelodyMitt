@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ProductCard } from "./ProductCard";
 import { RevealGrid } from "./RevealGrid";
@@ -14,9 +15,13 @@ type Props = {
   products: Product[];
   /** Which filter chip is active */
   active?: { style?: string; category?: string; price?: string };
+  /** Shown between the filter chips and the listings, for example related guides */
+  lead?: ReactNode;
+  /** Heading above the listings; set it when there is something above them */
+  productsHeading?: string;
 };
 
-export function CollectionView({ title, intro, path, crumbs, products, active = {} }: Props) {
+export function CollectionView({ title, intro, path, crumbs, products, active = {}, lead, productsHeading }: Props) {
   const sold = products.filter((p) => p.status === "sold").length;
   const available = products.length - sold;
 
@@ -88,6 +93,14 @@ export function CollectionView({ title, intro, path, crumbs, products, active = 
             </Link>
           ))}
       </nav>
+
+      {lead}
+
+      {productsHeading && (
+        <div className="section-head products-head">
+          <h2>{productsHeading}</h2>
+        </div>
+      )}
 
       {products.length ? (
         <RevealGrid>

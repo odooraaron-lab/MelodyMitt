@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CollectionView } from "@/components/CollectionView";
+import { StylePosts } from "@/components/StylePosts";
 import { listPublicProducts } from "@/lib/products";
 import { site } from "@/site.config";
 import { shareImage } from "@/lib/seo";
@@ -38,6 +39,8 @@ export default async function StylePage({ params }: Props) {
       ]}
       products={products}
       active={{ style: style.id }}
+      lead={<StylePosts styleId={style.id} label={style.label} />}
+      productsHeading={`${style.label} pieces`}
     />
   );
 }
