@@ -94,7 +94,7 @@ export default async function PostPage({ params }: Props) {
             )}
           </nav>
           <h1>{post.title}</h1>
-          <PostThumb post={post} size={40} />
+          <PostThumb post={post} size={72} />
           <p>
             By <Link href="/about">{site.name}</Link>, <time dateTime={post.date}>{formatDate(post.date)}</time>.{" "}
             {readMinutes(post)} minute read

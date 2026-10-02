@@ -44,7 +44,7 @@ const wave = (y: number, amp: number, stroke: string) => (
   <path d={`M-2 ${y}q6 ${-amp} 12 0t12 0t12 0t12 0t12 0`} stroke={stroke} strokeWidth="2.4" fill="none" />
 );
 
-export function PostThumb({ post, size = 36 }: { post: Pick<Post, "slug" | "category">; size?: number }) {
+export function PostThumb({ post, size = 56 }: { post: Pick<Post, "slug" | "category">; size?: number }) {
   const p = palettes[post.category] ?? palettes["living-with-art"];
   const r = random(post.slug);
   const j = (n: number) => Math.round(r() * n); // small variation

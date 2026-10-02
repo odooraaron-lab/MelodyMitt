@@ -19,7 +19,7 @@ export function StylePosts({ styleId, label }: { styleId: string; label: string 
         {posts.map((p) => (
           <li key={p.slug}>
             <Link href={`/journal/${p.slug}`} className="hpost">
-              <PostThumb post={p} />
+              <PostThumb post={p} size={48} />
               <span className="hpost-kicker">{getCategory(p.category)?.label}</span>
               <h3>{p.title}</h3>
               <p>{p.description}</p>
