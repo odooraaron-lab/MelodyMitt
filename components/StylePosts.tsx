@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getCategory } from "@/content/categories";
-import { PostThumb } from "./PostThumb";
+import { PostCover } from "./PostCover";
 import { postsForStyle, readMinutes } from "@/content/posts";
 
 /** A swipeable row of journal guides that relate to an art style. Sits above the listings on style pages. */
@@ -19,7 +19,7 @@ export function StylePosts({ styleId, label }: { styleId: string; label: string 
         {posts.map((p) => (
           <li key={p.slug}>
             <Link href={`/journal/${p.slug}`} className="hpost">
-              <PostThumb post={p} size={48} />
+              <PostCover post={p} variant="wide" />
               <span className="hpost-kicker">{getCategory(p.category)?.label}</span>
               <h3>{p.title}</h3>
               <p>{p.description}</p>

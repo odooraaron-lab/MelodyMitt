@@ -3,7 +3,7 @@ import Link from "next/link";
 import { sortedPosts, readMinutes, postsByYear, postsInCategory } from "@/content/posts";
 import { categories, getCategory } from "@/content/categories";
 import { JsonLd } from "@/components/JsonLd";
-import { PostThumb } from "@/components/PostThumb";
+import { PostCover } from "@/components/PostCover";
 import { formatDate } from "@/lib/format";
 import { shareImage } from "@/lib/seo";
 import { site } from "@/site.config";
@@ -52,7 +52,7 @@ export default function Journal() {
 
       {lead && (
         <Link href={`/journal/${lead.slug}`} className="post-lead">
-          <PostThumb post={lead} />
+          <PostCover post={lead} variant="wide" priority />
           <span className="post-meta">
             Latest, {getCategory(lead.category)?.label}, {readMinutes(lead)} minute read
           </span>
@@ -65,7 +65,7 @@ export default function Journal() {
         {latest.map((post) => (
           <li key={post.slug}>
             <Link href={`/journal/${post.slug}`}>
-              <PostThumb post={post} />
+              <PostCover post={post} />
               <span className="post-meta">
                 {getCategory(post.category)?.label}, <time dateTime={post.date}>{formatDate(post.date)}</time>,{" "}
                 {readMinutes(post)} minute read

@@ -2511,3 +2511,51 @@ html.menu-open {
 .post-lead > .post-thumb {
   margin-bottom: 2px;
 }
+
+
+/* ---------- Painted post covers, framed like small artworks ---------- */
+.post-cover {
+  display: block;
+  justify-self: start;
+  width: min(184px, 52vw);
+  aspect-ratio: 4 / 3;
+  padding: 5px;
+  background: #fbf8f2;
+  box-shadow: 0 1px 2px rgb(var(--shadow) / 0.12), 0 6px 16px -8px rgb(var(--shadow) / 0.35);
+  margin-bottom: 6px;
+}
+.post-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.post-cover .post-thumb {
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+  border-radius: 0;
+}
+.post-cover-wide {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: 6px solid #fbf8f2;
+}
+.post-cover-wide img {
+  object-fit: cover;
+}
+.post-lead > .post-cover-wide {
+  margin-bottom: 10px;
+}
+.hpost > .post-cover-wide {
+  margin: -18px -18px 4px;
+  width: calc(100% + 36px);
+  border-width: 0 0 1px;
+  border-color: var(--line);
+  box-shadow: none;
+}
+.article-head .post-cover-wide {
+  margin: 14px 0 16px;
+}

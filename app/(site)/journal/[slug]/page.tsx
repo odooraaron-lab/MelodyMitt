@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost, posts, relatedPosts, readMinutes, wordCount } from "@/content/posts";
 import { getCategory } from "@/content/categories";
-import { PostThumb } from "@/components/PostThumb";
+import { PostCover, coverUrl } from "@/components/PostCover";
 import { Markdown, headings } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductCard } from "@/components/ProductCard";
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `/journal/${post.slug}`,
       publishedTime: post.date,
       authors: [site.name],
-      images: [shareImage],
+      images: coverUrl(post.slug) ? [{ url: coverUrl(post.slug)!, width: 1200, height: 675, alt: post.title }] : [shareImage],
     },
   };
 }
@@ -68,7 +68,7 @@ export default async function PostPage({ params }: Props) {
           wordCount: wordCount(post),
           inLanguage: "en-NZ",
           mainEntityOfPage: `${site.url}/journal/${post.slug}`,
-          image: `${site.url}${shareImage.url}`,
+          image: `${site.url}${coverUrl(post.slug) ?? shareImage.url}`,
           author: { "@type": "Person", name: site.name, url: `${site.url}/about` },
           publisher: { "@type": "Organization", name: site.name, logo: `${site.url}/icon-512.png` },
         }}
@@ -94,7 +94,7 @@ export default async function PostPage({ params }: Props) {
             )}
           </nav>
           <h1>{post.title}</h1>
-          <PostThumb post={post} size={72} />
+          <PostCover post={post} variant="wide" priority alt={`Painting for ${post.title}`} />
           <p>
             By <Link href="/about">{site.name}</Link>, <time dateTime={post.date}>{formatDate(post.date)}</time>.{" "}
             {readMinutes(post)} minute read
@@ -144,7 +144,7 @@ export default async function PostPage({ params }: Props) {
             {related.map((r) => (
               <li key={r.slug}>
                 <Link href={`/journal/${r.slug}`}>
-                  <PostThumb post={r} />
+                  <PostCover post={r} />
                   <span className="post-meta">{readMinutes(r)} minute read</span>
                   <h3>{r.title}</h3>
                   <p>{r.description}</p>
