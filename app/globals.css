@@ -324,107 +324,100 @@ html.menu-open {
   transition-delay: 0.15s;
 }
 
+/* ---------- Footer: compact, deep ink ---------- */
 .site-footer {
   position: relative;
   overflow: hidden;
-  margin-top: 110px;
-  padding: 56px 0 calc(28px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
-  font-size: 15px;
-  color: var(--muted);
   isolation: isolate;
+  margin-top: 72px;
+  padding: 36px 0 calc(16px + env(safe-area-inset-bottom));
+  background: var(--deep);
+  color: var(--on-deep-muted);
+  font-size: 14px;
 }
 .footer-inner {
   display: grid;
-  gap: 44px;
-}
-.footer-top {
-  display: grid;
-  gap: 28px;
+  gap: 20px;
 }
 @media (min-width: 900px) {
-  .footer-top {
-    grid-template-columns: 1fr 1.2fr;
-    gap: 64px;
-    align-items: start;
+  .footer-inner {
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 40px;
   }
 }
 .footer-brand {
   display: grid;
-  gap: 10px;
-  max-width: 44ch;
+  gap: 4px;
+  align-content: start;
 }
 .footer-name {
   font-family: var(--serif);
-  font-size: 30px;
+  font-size: 24px;
   line-height: 1.1;
-  color: var(--ink);
-  font-variation-settings: "opsz" 48;
+  color: var(--on-deep);
+  font-variation-settings: "opsz" 36;
 }
-.footer-promises {
-  list-style: none;
-  margin: 0;
-  padding: 6px 20px;
-  display: grid;
-}
-.footer-promises li {
-  display: grid;
-  gap: 2px;
-  padding: 14px 0;
-}
-.footer-promises li + li {
-  border-top: 1px solid rgb(255 255 255 / 0.55);
-}
-.footer-promises strong {
-  color: var(--ink);
-  font-weight: 600;
-}
-.footer-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 34px 20px;
-}
-@media (min-width: 900px) {
-  .footer-cols {
-    grid-template-columns: 1fr 1fr 1.5fr 1fr;
-  }
-}
+/* Phones: each group is a short wrapped row of links. Desktop: tidy columns. */
 .footer-col {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   align-content: start;
 }
-.footer-guides {
-  grid-column: 1 / -1;
-}
-@media (min-width: 900px) {
-  .footer-guides {
-    grid-column: auto;
-  }
-}
 .footer-col h2 {
+  flex-basis: 100%;
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0;
-  color: var(--ink);
-  margin-bottom: 4px;
+  color: var(--on-deep);
+  margin-bottom: 2px;
+}
+@media (min-width: 900px) {
+  .footer-col {
+    display: grid;
+    gap: 5px;
+  }
 }
 .site-footer a {
+  color: var(--on-deep-muted);
   text-decoration: none;
+  padding: 3px 0;
 }
 .site-footer a:hover {
-  color: var(--ink);
+  color: var(--on-deep);
 }
 .footer-bottom {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  align-items: center;
+  gap: 8px 16px;
   flex-wrap: wrap;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
-  font-size: 14px;
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  font-size: 13px;
 }
+.site-footer .text-link {
+  color: var(--on-deep);
+}
+.site-footer .glow span {
+  width: 300px;
+  height: 300px;
+}
+.site-footer .glow span:nth-child(1) {
+  background: var(--accent);
+  opacity: 0.22;
+}
+.site-footer .glow span:nth-child(2) {
+  opacity: 0.25;
+}
+.site-footer .glow span:nth-child(3) {
+  background: #c4877a;
+  opacity: 0.12;
+}
+
+/* Plain underlined link used in a few places */
 .text-link {
   color: var(--ink);
   text-decoration: underline !important;
@@ -2338,36 +2331,3 @@ html.menu-open {
   text-decoration-thickness: 2px !important;
 }
 
-/* Deep footer */
-.site-footer {
-  background: var(--deep);
-  color: var(--on-deep-muted);
-  border-top: 0;
-}
-.site-footer .footer-name,
-.site-footer .footer-col h2,
-.site-footer .footer-promises strong,
-.site-footer a:hover,
-.site-footer .text-link {
-  color: var(--on-deep);
-}
-.site-footer .glass {
-  background: rgb(255 255 255 / 0.06);
-  border-color: rgb(255 255 255 / 0.14);
-  box-shadow: none;
-}
-.site-footer .footer-promises li + li,
-.site-footer .footer-bottom {
-  border-color: rgb(255 255 255 / 0.12);
-}
-.site-footer .glow span:nth-child(1) {
-  background: var(--accent);
-  opacity: 0.28;
-}
-.site-footer .glow span:nth-child(2) {
-  opacity: 0.32;
-}
-.site-footer .glow span:nth-child(3) {
-  background: #c4877a;
-  opacity: 0.16;
-}
