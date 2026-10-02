@@ -1,24 +1,25 @@
-// Journal posts. To add one, copy an entry, give it a new slug and date, and write the body.
+// Journal posts. The guides on living with art are below; the city and art-history guides live in content/archive/<year>.ts.
+// To add one, copy an entry, give it a new slug and date, pick a category (see content/categories.ts) and write the body.
 // Body format: blank line between paragraphs, "## " for headings, "- " for list items,
 // **bold**, *italic*, and [link text](/shop).
 
-export type Post = {
-  slug: string;
-  title: string; // shown on the page
-  seoTitle: string; // Google title, under ~60 characters
-  description: string; // Google description, under ~155 characters
-  date: string; // YYYY-MM-DD
-  keywords: string[];
-  /** Shown under "Popular guides" in the footer */
-  featured?: boolean;
-  /** Call to action at the end of the post; with a style, a few pieces in that style are shown too */
-  shop?: { label: string; href: string; style?: string };
-  body: string;
-};
+import type { Post, CategoryId } from "./types";
+import { posts2017 } from "./archive/2017";
+import { posts2018 } from "./archive/2018";
+import { posts2019 } from "./archive/2019";
+import { posts2020 } from "./archive/2020";
+import { posts2021 } from "./archive/2021";
+import { posts2022 } from "./archive/2022";
+import { posts2023 } from "./archive/2023";
+import { posts2024 } from "./archive/2024";
+import { posts2025 } from "./archive/2025";
 
-export const posts: Post[] = [
+export type { Post, CategoryId };
+
+const livingPosts: Post[] = [
   {
     slug: "how-to-choose-original-art-for-your-living-room",
+    category: "living-with-art",
     title: "How to choose original art for your living room",
     seoTitle: "How to Choose Original Art for Your Living Room",
     description:
@@ -53,6 +54,7 @@ Every piece in the [shop](/shop) is a single original, so when you find the one 
   },
   {
     slug: "how-high-to-hang-art",
+    category: "living-with-art",
     title: "How high to hang art: a simple guide that works in any room",
     seoTitle: "How High to Hang Art: A Simple Guide for Any Room",
     description:
@@ -97,8 +99,9 @@ Once you've got the height right, the next question is what to hang. Browse the 
   },
   {
     slug: "original-art-vs-prints",
+    category: "living-with-art",
     title: "Original art or a print? Why one-of-a-kind pieces are worth it",
-    seoTitle: "Original Art vs Prints: Why One-of-a-Kind Is Worth It",
+    seoTitle: "Original Art vs Prints: Why One-of-a-Kind Wins",
     description:
       "What you actually get when you buy original art instead of a print, and how to start a collection of original work in New Zealand.",
     date: "2026-09-16",
@@ -132,6 +135,7 @@ Every listing in the [shop](/shop) is one of one. When it sells, it's marked wit
   },
   {
     slug: "gallery-wall-ideas",
+    category: "living-with-art",
     title: "Gallery wall ideas: how to make it feel collected, not cluttered",
     seoTitle: "Gallery Wall Ideas: Collected, Not Cluttered",
     description:
@@ -174,6 +178,7 @@ Looking for a first anchor piece? See what's [available now](/shop).
   },
   {
     slug: "warm-neutral-interiors-and-art",
+    category: "living-with-art",
     title: "Warm neutral interiors: how art adds depth to a calm room",
     seoTitle: "Warm Neutral Interiors: How Art Adds Depth",
     description:
@@ -216,6 +221,7 @@ Browse [art and objects](/shop) chosen with calm, layered rooms in mind.
   },
   {
     slug: "caring-for-original-art-nz-homes",
+    category: "living-with-art",
     title: "How to care for original artwork in a New Zealand home",
     seoTitle: "How to Care for Original Art in a New Zealand Home",
     description:
@@ -256,6 +262,7 @@ Every piece from the [shop](/shop) is packed carefully for its courier trip. Onc
   },
   {
     slug: "ways-to-style-original-art-at-home",
+    category: "living-with-art",
     title: "10 ways to style original art at home",
     seoTitle: "10 Ways to Style Original Art at Home",
     description:
@@ -312,6 +319,7 @@ Looking for the piece to start with? Every listing in the [shop](/shop) is one o
   },
   {
     slug: "how-to-choose-a-frame-for-art",
+    category: "living-with-art",
     title: "How to choose a frame for original art",
     seoTitle: "How to Choose a Frame for Original Art",
     description:
@@ -358,6 +366,7 @@ Find something worth framing in the [art collection](/shop/category/art).
   },
   {
     slug: "abstract-art-at-home",
+    category: "living-with-art",
     title: "Abstract art at home: how to choose it and where to hang it",
     seoTitle: "Abstract Art at Home: How to Choose and Hang It",
     description:
@@ -401,6 +410,7 @@ Every abstract piece in the shop is a single original.
   },
   {
     slug: "original-art-as-a-gift",
+    category: "living-with-art",
     title: "Original art as a gift: how to choose a piece for someone else",
     seoTitle: "Original Art as a Gift: How to Choose Well",
     description:
@@ -443,21 +453,47 @@ Flowers fade and gadgets date, but a well-chosen original goes on being enjoyed 
   },
 ];
 
+export const posts: Post[] = [
+  ...livingPosts,
+  ...posts2017,
+  ...posts2018,
+  ...posts2019,
+  ...posts2020,
+  ...posts2021,
+  ...posts2022,
+  ...posts2023,
+  ...posts2024,
+  ...posts2025,
+];
+
 export const getPost = (slug: string) => posts.find((p) => p.slug === slug) ?? null;
 export const sortedPosts = () => [...posts].sort((a, b) => b.date.localeCompare(a.date));
 export const featuredPosts = () => sortedPosts().filter((p) => p.featured);
+export const postsInCategory = (id: CategoryId) => sortedPosts().filter((p) => p.category === id);
+export const postYear = (p: Post) => p.date.slice(0, 4);
+
+/** Posts grouped by year, newest year first. */
+export function postsByYear(list: Post[] = sortedPosts()) {
+  const years = new Map<string, Post[]>();
+  for (const p of list) years.set(postYear(p), [...(years.get(postYear(p)) ?? []), p]);
+  return [...years.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+}
 
 const words = (p: Post) => p.body.split(/\s+/).filter(Boolean).length;
 export const wordCount = words;
 export const readMinutes = (p: Post) => Math.max(2, Math.round(words(p) / 220));
 
-/** Other posts that share the most keywords, newest first on ties. */
+/** Other posts: same category first, then the most shared keywords. */
 export function relatedPosts(post: Post, n = 3) {
-  const kw = new Set(post.keywords.flatMap((k) => k.toLowerCase().split(" ")));
+  const terms = (p: Post) => new Set(p.keywords.flatMap((k) => k.toLowerCase().split(/\s+/)).filter((w) => w.length > 3));
+  const mine = terms(post);
   return sortedPosts()
     .filter((p) => p.slug !== post.slug)
-    .map((p) => ({ p, score: p.keywords.flatMap((k) => k.toLowerCase().split(" ")).filter((w) => kw.has(w)).length }))
-    .sort((a, b) => b.score - a.score)
+    .map((p) => ({
+      p,
+      score: (p.category === post.category ? 5 : 0) + [...terms(p)].filter((w) => mine.has(w)).length,
+    }))
+    .sort((a, b) => b.score - a.score || b.p.date.localeCompare(a.p.date))
     .slice(0, n)
     .map((x) => x.p);
 }

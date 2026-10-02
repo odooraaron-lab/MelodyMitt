@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost, posts, relatedPosts, readMinutes, wordCount } from "@/content/posts";
+import { getCategory } from "@/content/categories";
 import { Markdown, headings } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductCard } from "@/components/ProductCard";
@@ -41,6 +42,7 @@ export default async function PostPage({ params }: Props) {
   const post = getPost((await params).slug);
   if (!post) notFound();
 
+  const cat = getCategory(post.category);
   const toc = headings(post.body);
   const related = relatedPosts(post);
   // A few pieces to shop at the end, if the post points at a style. Never let the database break a post.
@@ -74,6 +76,7 @@ export default async function PostPage({ params }: Props) {
         data={breadcrumbs([
           ["Home", "/"],
           ["Journal", "/journal"],
+          ...(cat ? ([[cat.label, `/journal/category/${cat.id}`]] as [string, string][]) : []),
           [post.title, `/journal/${post.slug}`],
         ])}
       />
@@ -82,6 +85,12 @@ export default async function PostPage({ params }: Props) {
         <header className="article-head">
           <nav className="crumbs" aria-label="Breadcrumb">
             <Link href="/journal">Journal</Link>
+            {cat && (
+              <>
+                <span aria-hidden> / </span>
+                <Link href={`/journal/category/${cat.id}`}>{cat.label}</Link>
+              </>
+            )}
           </nav>
           <h1>{post.title}</h1>
           <p>
@@ -127,7 +136,7 @@ export default async function PostPage({ params }: Props) {
         <section className="section" aria-labelledby="more-guides">
           <div className="section-head">
             <h2 id="more-guides">Keep reading</h2>
-            <Link href="/journal">All guides</Link>
+            <Link href={cat ? `/journal/category/${cat.id}` : "/journal"}>{cat ? `All ${cat.label} guides` : "All guides"}</Link>
           </div>
           <ul className="post-list">
             {related.map((r) => (

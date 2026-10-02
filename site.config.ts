@@ -42,7 +42,7 @@ export const site = {
   theme: "plaster" as Theme,
 
   contactEmail: "", // e.g. "hello@melodymitt.co.nz", shown in the footer when filled in
-  instagram: "", // e.g. "https://instagram.com/melodymitt"
+  instagram: "https://www.instagram.com/melodymittartist/",
 
   // Default courier price for new listings (NZD). Melody can change it per listing.
   defaultShippingNzd: 25,

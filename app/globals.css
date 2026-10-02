@@ -2357,3 +2357,69 @@ html.menu-open {
   text-decoration-thickness: 2px !important;
 }
 
+
+
+/* ---------- Journal: categories and archive ---------- */
+.chip-count {
+  margin-left: 4px;
+  font-size: 12px;
+  opacity: 0.65;
+}
+.archive {
+  margin-top: 56px;
+}
+.archive h2 {
+  font-size: clamp(24px, 5vw, 30px);
+  margin-bottom: 14px;
+}
+.archive-year {
+  border-top: 1px solid var(--line);
+}
+.archive-year:last-of-type {
+  border-bottom: 1px solid var(--line);
+}
+.archive-year summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 16px 0;
+  font-family: var(--serif);
+  font-size: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.archive-year summary::-webkit-details-marker {
+  display: none;
+}
+.archive-year summary::after {
+  content: "+";
+  font-family: var(--sans);
+  font-size: 22px;
+  color: var(--muted);
+}
+.archive-year[open] summary::after {
+  content: "–";
+}
+.archive-year ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 14px;
+  display: grid;
+  gap: 10px;
+}
+.archive-year li {
+  display: grid;
+  gap: 1px;
+}
+.archive-year li a {
+  font-size: 17px;
+  line-height: 1.35;
+}
+.chips-wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+  padding-bottom: 8px;
+}
+.chips-wrap .chip {
+  flex: 0 1 auto;
+}
