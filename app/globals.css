@@ -2236,8 +2236,34 @@ html.menu-open {
 }
 
 /* Home intro on the deep band */
+/* Compact: headline on the left, words and buttons on the right on wide screens */
 .intro-band .intro {
-  padding: clamp(48px, 12vw, 120px) var(--gutter) clamp(48px, 10vw, 104px);
+  padding: 30px var(--gutter) 32px;
+  display: grid;
+  gap: 14px;
+}
+.intro-band .intro h1 {
+  font-size: clamp(28px, 7.4vw, 46px);
+  max-width: 20ch;
+}
+.intro-band .intro p {
+  margin-top: 0;
+  font-size: 16px;
+}
+.intro-band .intro-actions {
+  margin-top: 6px;
+}
+@media (min-width: 900px) {
+  .intro-band .intro {
+    grid-template-columns: 1.15fr 1fr;
+    align-items: end;
+    column-gap: 56px;
+    padding-top: 44px;
+    padding-bottom: 44px;
+  }
+  .intro-band .intro h1 {
+    grid-row: span 2;
+  }
 }
 .intro-band .intro p {
   color: var(--on-deep-muted);
