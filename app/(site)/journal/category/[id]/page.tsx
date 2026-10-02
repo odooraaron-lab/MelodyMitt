@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { categories, getCategory } from "@/content/categories";
 import { postsInCategory, readMinutes } from "@/content/posts";
 import { JsonLd } from "@/components/JsonLd";
+import { PostThumb } from "@/components/PostThumb";
 import { formatDate } from "@/lib/format";
 import { breadcrumbs, shareImage } from "@/lib/seo";
 import { site } from "@/site.config";
@@ -72,11 +73,12 @@ export default async function CategoryPage({ params }: Props) {
         {posts.map((post) => (
           <li key={post.slug}>
             <Link href={`/journal/${post.slug}`}>
-              <h3>{post.title}</h3>
-              <p>{post.description}</p>
+              <PostThumb post={post} />
               <span className="post-meta">
                 <time dateTime={post.date}>{formatDate(post.date)}</time>, {readMinutes(post)} minute read
               </span>
+              <h3>{post.title}</h3>
+              <p>{post.description}</p>
             </Link>
           </li>
         ))}

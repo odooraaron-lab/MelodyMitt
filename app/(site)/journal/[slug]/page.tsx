@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost, posts, relatedPosts, readMinutes, wordCount } from "@/content/posts";
 import { getCategory } from "@/content/categories";
+import { PostThumb } from "@/components/PostThumb";
 import { Markdown, headings } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductCard } from "@/components/ProductCard";
@@ -93,6 +94,7 @@ export default async function PostPage({ params }: Props) {
             )}
           </nav>
           <h1>{post.title}</h1>
+          <PostThumb post={post} size={40} />
           <p>
             By <Link href="/about">{site.name}</Link>, <time dateTime={post.date}>{formatDate(post.date)}</time>.{" "}
             {readMinutes(post)} minute read
@@ -142,9 +144,10 @@ export default async function PostPage({ params }: Props) {
             {related.map((r) => (
               <li key={r.slug}>
                 <Link href={`/journal/${r.slug}`}>
+                  <PostThumb post={r} />
+                  <span className="post-meta">{readMinutes(r)} minute read</span>
                   <h3>{r.title}</h3>
                   <p>{r.description}</p>
-                  <span className="post-meta">{readMinutes(r)} minute read</span>
                 </Link>
               </li>
             ))}

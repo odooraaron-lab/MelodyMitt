@@ -5,6 +5,7 @@ import { RevealGrid } from "@/components/RevealGrid";
 import { listPublicProducts } from "@/lib/products";
 import { sortedPosts } from "@/content/posts";
 import { formatDate } from "@/lib/format";
+import { PostThumb } from "@/components/PostThumb";
 import { site } from "@/site.config";
 
 export const dynamic = "force-dynamic";
@@ -104,9 +105,10 @@ export default async function Home() {
             {posts.map((post) => (
               <li key={post.slug}>
                 <Link href={`/journal/${post.slug}`}>
+                  <PostThumb post={post} />
+                  <time dateTime={post.date}>{formatDate(post.date)}</time>
                   <h3>{post.title}</h3>
                   <p>{post.description}</p>
-                  <time dateTime={post.date}>{formatDate(post.date)}</time>
                 </Link>
               </li>
             ))}
